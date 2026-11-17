@@ -1,0 +1,193 @@
+{
+  "hero": {
+    "eyebrow": "CONTROL CENTER / FLOOR",
+    "title": "楼层分流建议",
+    "subtitle": "汇总各楼层人流与座位占用，给出「去哪一层就餐最省时间」的建议",
+    "stats": [
+      {
+        "label": "DINERS",
+        "value": "1096 人",
+        "sub": "三层在餐总人数"
+      },
+      {
+        "label": "RECOMMEND",
+        "value": "三楼",
+        "sub": "当前推荐楼层"
+      },
+      {
+        "label": "SEATS",
+        "value": "1360 座",
+        "sub": "三个楼层座位总量"
+      }
+    ]
+  },
+  "advice": {
+    "title": "现在请前往「三楼」就餐",
+    "reason": "该楼层在座 190 / 座位 360 个，座位使用率 52.8%，为三层中最低；按当前排队模型估算，可直接打饭的概率最高。",
+    "badges": [
+      "数据完整性校验通过",
+      "建议前往耗时约 2 分钟"
+    ]
+  },
+  "kpis": [
+    {
+      "icon": "seat",
+      "label": "一楼座位使用率",
+      "value": "83.8",
+      "unit": "%",
+      "tone": "danger",
+      "delta": "在座 402 / 480",
+      "source": "floor_stats"
+    },
+    {
+      "icon": "seat",
+      "label": "二楼座位使用率",
+      "value": "61.2",
+      "unit": "%",
+      "tone": "ok",
+      "delta": "在座 318 / 520",
+      "source": "floor_stats"
+    },
+    {
+      "icon": "seat",
+      "label": "三楼座位使用率",
+      "value": "52.8",
+      "unit": "%",
+      "tone": "ok",
+      "delta": "在座 190 / 360",
+      "source": "floor_stats"
+    },
+    {
+      "icon": "clock",
+      "label": "推荐楼层等待",
+      "value": "2",
+      "unit": "分钟",
+      "tone": "ok",
+      "delta": "按排队模型估算",
+      "source": "分流算法"
+    }
+  ],
+  "floors": [
+    {
+      "name": "一楼",
+      "seats": 480,
+      "occupied": 402,
+      "usage": 83.8,
+      "wait": "约 10 分钟",
+      "tone": "danger"
+    },
+    {
+      "name": "二楼",
+      "seats": 520,
+      "occupied": 318,
+      "usage": 61.2,
+      "wait": "约 2 分钟",
+      "tone": "ok"
+    },
+    {
+      "name": "三楼",
+      "seats": 360,
+      "occupied": 190,
+      "usage": 52.8,
+      "wait": "约 2 分钟",
+      "tone": "ok"
+    }
+  ],
+  "share": [
+    {
+      "name": "一楼",
+      "value": 479,
+      "tone": "accent"
+    },
+    {
+      "name": "二楼",
+      "value": 385,
+      "tone": "ok"
+    },
+    {
+      "name": "三楼",
+      "value": 232,
+      "tone": "warn"
+    }
+  ],
+  "flow": {
+    "categories": [
+      "07:00",
+      "08:00",
+      "09:00",
+      "10:00",
+      "11:00",
+      "12:00",
+      "13:00",
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00",
+      "19:00",
+      "20:00"
+    ],
+    "series": [
+      {
+        "name": "1楼",
+        "values": [
+          27,
+          19,
+          9,
+          7,
+          99,
+          191,
+          80,
+          14,
+          8,
+          10,
+          88,
+          180,
+          53,
+          19
+        ],
+        "tone": "accent"
+      },
+      {
+        "name": "2楼",
+        "values": [
+          21,
+          13,
+          6,
+          5,
+          64,
+          130,
+          55,
+          10,
+          5,
+          9,
+          63,
+          112,
+          38,
+          11
+        ],
+        "tone": "ok"
+      },
+      {
+        "name": "3楼",
+        "values": [
+          12,
+          9,
+          4,
+          2,
+          47,
+          94,
+          36,
+          6,
+          4,
+          4,
+          41,
+          76,
+          25,
+          8
+        ],
+        "tone": "warn"
+      }
+    ]
+  }
+}

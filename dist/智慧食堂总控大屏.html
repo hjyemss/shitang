@@ -1,0 +1,1744 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 单文件构建产物：由 tools/build_single_file.py 生成，请勿手改 -->
+  <title>人大附中智慧食堂综合调度中心</title>
+  <meta name="description" content="智慧食堂综合管理与健康分析系统 · 总控大屏演示版（纯前端静态页，无需部署）" />
+  <style>
+/* ============================================================
+   智慧食堂综合调度中心 · 大屏样式
+   设计基调：深色指挥中心 + 细线描边 + 冷色高亮
+   所有颜色走 CSS 变量，[data-theme="light"] 下整屏可切换浅色
+   ============================================================ */
+
+:root {
+  --bg: #060b14;
+  --bg-grid: rgba(90, 150, 220, 0.06);
+  --panel: #0a1424;
+  --panel2: #0e1c30;
+  --panel3: #12233a;
+  --line: rgba(120, 170, 255, 0.14);
+  --line2: rgba(120, 170, 255, 0.26);
+  --text: #e8f0fb;
+  --muted: #9db2cf;
+  --dim: #6b83a4;
+  --accent: #38bdf8;
+  --accent2: #6366f1;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #fb5c72;
+  --grid: rgba(120, 170, 255, 0.10);
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --radius: 14px;
+  --sidebar-w: 238px;
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+}
+
+html[data-theme="light"] {
+  --bg: #eef3fa;
+  --bg-grid: rgba(40, 90, 150, 0.07);
+  --panel: #ffffff;
+  --panel2: #f5f8fd;
+  --panel3: #e9f0fa;
+  --line: rgba(30, 70, 120, 0.14);
+  --line2: rgba(30, 70, 120, 0.24);
+  --text: #0f2135;
+  --muted: #4b6178;
+  --dim: #7089a3;
+  --accent: #0b7fbf;
+  --accent2: #4f46e5;
+  --ok: #0e9f6e;
+  --warn: #b7791f;
+  --danger: #d6455d;
+  --grid: rgba(30, 70, 120, 0.10);
+  --shadow: 0 14px 36px rgba(23, 48, 84, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 78% -10%, rgba(56, 189, 248, 0.10), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(99, 102, 241, 0.10), transparent 60%),
+    linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 42px 42px,
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 42px 42px,
+    var(--bg);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app { display: flex; min-height: 100vh; }
+
+/* ---------------------------------------------------------- 侧边栏 */
+.sidebar {
+  width: var(--sidebar-w);
+  flex: 0 0 var(--sidebar-w);
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(12, 24, 41, 0.92), rgba(6, 12, 22, 0.92));
+  backdrop-filter: blur(8px);
+  padding: 22px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+}
+
+html[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #ffffff, #f2f7fd);
+}
+
+.brand { display: flex; align-items: center; gap: 11px; padding: 0 4px; }
+.brand-mark {
+  width: 38px; height: 38px; border-radius: 11px;
+  display: grid; place-items: center;
+  color: var(--accent);
+  background: linear-gradient(140deg, rgba(56, 189, 248, 0.22), rgba(99, 102, 241, 0.18));
+  border: 1px solid var(--line2);
+}
+.brand-t { font-size: 15px; font-weight: 700; letter-spacing: 0.4px; }
+.brand-s { font-size: 10px; color: var(--dim); letter-spacing: 2.2px; margin-top: 2px; }
+
+.side-label {
+  font-size: 10px; color: var(--dim); letter-spacing: 1.8px;
+  text-transform: uppercase; padding: 0 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.side-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  color: var(--muted); text-decoration: none;
+  border: 1px solid transparent;
+  font-size: 13.5px;
+  transition: background 0.16s, color 0.16s, border-color 0.16s;
+}
+.nav-item svg { flex: 0 0 auto; opacity: 0.9; }
+.nav-item:hover { background: rgba(56, 189, 248, 0.07); color: var(--text); }
+.nav-item.active {
+  color: var(--text);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.16), rgba(56, 189, 248, 0.03));
+  border-color: var(--line2);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.nav-item.active svg { color: var(--accent); }
+
+.status-list { display: flex; flex-direction: column; gap: 2px; }
+.status-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--muted);
+  padding: 7px 6px; border-bottom: 1px dashed var(--line);
+}
+.status-row:last-child { border-bottom: none; }
+.status-row b { color: var(--text); font-weight: 600; font-size: 11.5px; }
+
+.side-foot { margin-top: auto; font-size: 10.5px; color: var(--dim); line-height: 1.8; padding: 0 6px; }
+
+/* ---------------------------------------------------------- 主区域 */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 26px; border-bottom: 1px solid var(--line);
+  background: rgba(6, 12, 22, 0.6);
+  backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 20;
+}
+html[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.75); }
+.topbar .crumb { font-size: 12px; color: var(--dim); letter-spacing: 1px; }
+.topbar .crumb b { color: var(--text); font-weight: 600; letter-spacing: 0.5px; }
+.topbar .spacer { flex: 1; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--muted);
+  padding: 5px 11px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel);
+}
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.16); }
+.icon-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 11px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+  font-size: 12px; font-family: inherit;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--line2); }
+
+.view { padding: 22px 26px 30px; display: flex; flex-direction: column; gap: 18px; }
+
+/* ---------------------------------------------------------- 横幅 */
+.hero {
+  position: relative; overflow: hidden;
+  border-radius: 18px; border: 1px solid var(--line2);
+  background:
+    radial-gradient(700px 260px at 88% -30%, rgba(56, 189, 248, 0.30), transparent 65%),
+    linear-gradient(115deg, #0b2138 0%, #0d2a44 45%, #10384f 100%);
+  box-shadow: var(--shadow);
+  padding: 26px 28px;
+  display: flex; gap: 24px; align-items: center; justify-content: space-between;
+  flex-wrap: wrap;
+}
+html[data-theme="light"] .hero {
+  background:
+    radial-gradient(700px 260px at 88% -30%, rgba(56, 189, 248, 0.35), transparent 65%),
+    linear-gradient(115deg, #0f4c81 0%, #13659f 55%, #16758c 100%);
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 26px;
+  opacity: 0.35; pointer-events: none;
+}
+.hero-main { position: relative; z-index: 1; min-width: 320px; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 10.5px; letter-spacing: 2.4px; color: #bfe6ff;
+  border: 1px solid rgba(160, 220, 255, 0.35);
+  background: rgba(10, 40, 66, 0.45);
+  padding: 5px 12px; border-radius: 999px;
+}
+.hero h1 { margin: 14px 0 8px; font-size: 30px; line-height: 1.2; letter-spacing: 0.5px; color: #f4f9ff; }
+.hero p { margin: 0; font-size: 13px; color: #a9c8de; }
+.hero-stats { display: flex; gap: 10px; position: relative; z-index: 1; flex-wrap: wrap; }
+.hero-stat {
+  min-width: 108px; padding: 10px 14px; border-radius: 12px;
+  background: rgba(4, 18, 32, 0.55); border: 1px solid rgba(150, 210, 255, 0.20);
+}
+.hero-stat .k { font-size: 9.5px; letter-spacing: 1.6px; color: #8fb6d1; }
+.hero-stat .v { font-size: 19px; font-weight: 700; color: #f2f9ff; margin: 3px 0 1px; font-variant-numeric: tabular-nums; }
+.hero-stat .s { font-size: 10.5px; color: #8fb6d1; }
+
+/* ---------------------------------------------------------- 指标卡 */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.kpi {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--panel2), var(--panel));
+  padding: 15px 16px 13px; position: relative; overflow: hidden;
+}
+.kpi::before {
+  content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--tone), transparent 70%);
+  opacity: 0.8;
+}
+.kpi-head { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.kpi-ico {
+  width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
+  color: var(--tone); background: color-mix(in srgb, var(--tone) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, transparent);
+}
+.kpi-value { display: flex; align-items: baseline; gap: 5px; margin: 10px 0 8px; }
+.kpi-value b { font-size: 30px; line-height: 1; font-weight: 700; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; }
+.kpi-value span { font-size: 12px; color: var(--muted); }
+.kpi-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 3px 8px; border-radius: 999px;
+  color: var(--tone); border: 1px solid color-mix(in srgb, var(--tone) 32%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+.kpi-src { font-size: 10.5px; color: var(--dim); }
+
+/* ---------------------------------------------------------- 面板 */
+.grid-2 { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.span-2 { grid-column: span 2; }
+
+.panel {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: linear-gradient(170deg, var(--panel2), var(--panel));
+  padding: 16px 18px 14px;
+  min-width: 0;
+}
+.panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.panel-title { display: flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 650; }
+.panel-title svg { color: var(--accent); }
+.panel-sub { font-size: 11.5px; color: var(--dim); margin-top: 4px; }
+.panel-tag { font-size: 9.5px; letter-spacing: 1.6px; color: var(--dim); white-space: nowrap; padding-top: 4px; }
+
+/* ---------------------------------------------------------- 表格 */
+.table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.table th {
+  text-align: left; font-weight: 500; color: var(--dim); font-size: 11px;
+  letter-spacing: 0.6px; padding: 7px 8px; border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.table td { padding: 9px 8px; border-bottom: 1px dashed var(--line); color: var(--muted); }
+.table tr:last-child td { border-bottom: none; }
+.table td:first-child { color: var(--text); }
+.table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.table th.num { text-align: right; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; padding: 2px 9px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tone) 34%, transparent);
+  color: var(--tone); background: color-mix(in srgb, var(--tone) 12%, transparent);
+}
+.tag-ok { --tone: var(--ok); }
+.tag-warn { --tone: var(--warn); }
+.tag-danger { --tone: var(--danger); }
+.tag-info { --tone: var(--accent); }
+.tag-muted { --tone: var(--dim); }
+
+/* ---------------------------------------------------------- 告警条 */
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  border-radius: 12px; padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--danger) 34%, transparent);
+  border-left: 3px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, transparent);
+  color: var(--text); font-size: 13px;
+}
+.alert svg { color: var(--danger); margin-top: 1px; flex: 0 0 auto; }
+.alert.ok { border-color: color-mix(in srgb, var(--ok) 34%, transparent); border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 9%, transparent); }
+.alert.ok svg { color: var(--ok); }
+.alert.info { border-color: color-mix(in srgb, var(--accent) 34%, transparent); border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.alert.info svg { color: var(--accent); }
+.alert.warn { border-color: color-mix(in srgb, var(--warn) 36%, transparent); border-left-color: var(--warn); background: color-mix(in srgb, var(--warn) 10%, transparent); }
+.alert.warn svg { color: var(--warn); }
+
+/* ---------------------------------------------------------- 楼层 / 进度条 */
+.bar-row { margin: 10px 0; }
+.bar-top { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.bar-top b { color: var(--text); font-variant-numeric: tabular-nums; }
+.bar { height: 6px; border-radius: 999px; background: rgba(120, 170, 255, 0.10); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--tone), color-mix(in srgb, var(--tone) 55%, #ffffff)); }
+
+/* ---------------------------------------------------------- 告警时间线 */
+.timeline { display: flex; flex-direction: column; }
+.tl-item { display: grid; grid-template-columns: 42px 54px 1fr; gap: 8px; align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12px; }
+.tl-item:last-child { border-bottom: none; }
+.tl-time { color: var(--dim); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+.tl-text { color: var(--muted); line-height: 1.55; }
+
+/* ---------------------------------------------------------- 摄像头阵列 */
+.cams { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.cam {
+  border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px;
+  background: var(--panel); position: relative; overflow: hidden;
+}
+.cam::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 12px;
+  opacity: 0.5; pointer-events: none;
+}
+.cam-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--dim); }
+.cam-name { font-size: 12.5px; color: var(--text); margin: 8px 0 3px; }
+.cam-meta { font-size: 10.5px; color: var(--dim); position: relative; z-index: 1; }
+
+/* ---------------------------------------------------------- 模块状态 */
+.modules { display: flex; flex-direction: column; gap: 8px; }
+.module {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--line); border-radius: 11px;
+  padding: 10px 12px; background: var(--panel);
+}
+.module .m-ico {
+  width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+}
+.module .m-body { flex: 1; min-width: 0; }
+.module .m-name { font-size: 12.5px; color: var(--text); }
+.module .m-detail { font-size: 10.5px; color: var(--dim); margin-top: 2px; }
+
+/* ---------------------------------------------------------- 建议卡 */
+.advice {
+  border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent);
+  border-radius: 14px; padding: 16px 20px;
+  background:
+    radial-gradient(500px 200px at 90% -40%, color-mix(in srgb, var(--ok) 18%, transparent), transparent 70%),
+    var(--panel);
+}
+.advice .a-eyebrow { font-size: 10px; letter-spacing: 2px; color: var(--ok); display: flex; gap: 6px; align-items: center; }
+.advice h2 { margin: 8px 0 6px; font-size: 22px; color: var(--text); }
+.advice p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+.advice .a-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ---------------------------------------------------------- 表单 / 按钮 */
+.field { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.field label { font-size: 12px; color: var(--dim); }
+select, .btn {
+  font-family: inherit; font-size: 13px;
+  border-radius: 10px; border: 1px solid var(--line2);
+  background: var(--panel2); color: var(--text);
+  padding: 9px 12px; cursor: pointer;
+}
+select:focus, .btn:focus { outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); outline-offset: 1px; }
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent; color: #04121f; font-weight: 650;
+}
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------------------------------------------------------- 扩展页 */
+.slot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.slot {
+  border: 1px dashed var(--line2); border-radius: 12px; padding: 14px 16px;
+  background: var(--panel); display: flex; flex-direction: column; gap: 7px;
+}
+.slot.filled { border-style: solid; }
+.slot-name { font-size: 13.5px; color: var(--text); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.slot-hint { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
+.slot-meta { font-size: 10.5px; color: var(--dim); }
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px; line-height: 1.7; color: var(--muted);
+  background: rgba(4, 12, 22, 0.6); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px 14px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+html[data-theme="light"] .code { background: #f3f7fc; }
+
+/* ---------------------------------------------------------- 页脚 / 提示 */
+.foot {
+  margin-top: auto; padding: 14px 26px 18px;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 11px; color: var(--dim); flex-wrap: wrap;
+}
+
+.toast {
+  position: fixed; right: 24px; bottom: 24px; z-index: 99;
+  padding: 11px 16px; border-radius: 11px;
+  border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
+  background: color-mix(in srgb, var(--ok) 16%, var(--panel));
+  color: var(--text); font-size: 12.5px;
+  box-shadow: var(--shadow);
+  opacity: 0; transform: translateY(8px); pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  max-width: 360px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ---------------------------------------------------------- 图表通用 */
+.chart { width: 100%; display: block; }
+.chart text { font-family: var(--font); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--dim); margin-top: 6px; }
+.legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+
+.empty { color: var(--dim); font-size: 12px; padding: 18px 0; text-align: center; }
+
+/* ---------------------------------------------------------- 响应式 */
+@media (max-width: 1280px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .cams { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .slot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .app { flex-direction: column; }
+  .sidebar { width: 100%; flex: none; height: auto; position: static; flex-direction: row; align-items: center; gap: 14px; overflow-x: auto; }
+  .sidebar .side-label, .sidebar .side-foot, .sidebar .status-list { display: none; }
+  .nav { flex-direction: row; }
+  .nav-item span { display: none; }
+  .hero h1 { font-size: 22px; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .span-2 { grid-column: auto; }
+}
+
+@media print {
+  .sidebar, .topbar { display: none; }
+  body { background: #fff; color: #000; }
+}
+
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main">
+      <div class="topbar" id="topbar"></div>
+      <div class="view" id="view"></div>
+      <footer class="foot" id="foot"></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- 数据（可直接改 data/*.json；data.js 是构建产物，供 file:// 直接打开时兜底） -->
+  <script>
+/* 自动生成，请勿手改：由 tools/export_web_data.py 从 data/*.json 内联而来。
+   作用：让 index.html 直接用 file:// 双击打开时也能拿到数据（fetch 在 file:// 下会被浏览器拦截）。*/
+window.__PLATFORM_DATA__ = {"manifest":{"version":"1.0.0","phase":"第一阶段 · 演示版","brand":{"title":"智慧食堂","subtitle":"CONTROL CENTER","school":"人大附中"},"nav":[{"id":"overview","label":"系统总览","icon":"grid"},{"id":"queue","label":"排队拥堵监控","icon":"queue"},{"id":"floors","label":"楼层分流建议","icon":"layers"},{"id":"nutrition","label":"营养健康分析","icon":"nutrition"},{"id":"extensions","label":"扩展与接入","icon":"puzzle"}],"modules":[{"id":"queue","name":"排队拥堵监控","owner":"CV 组","status":"planned","dataFile":"data/queue.json","schema":"docs/INTERFACE.md#排队模块-queuejson","hint":"检测各窗口排队人数，写 window.people / wait"},{"id":"floors","name":"楼层分流建议","owner":"硬件组","status":"planned","dataFile":"data/floors.json","schema":"docs/INTERFACE.md#楼层模块-floorsjson","hint":"汇总多路摄像头 → 楼层人流与座位占用"},{"id":"nutrition","name":"营养健康分析","owner":"数据组","status":"mock","dataFile":"data/nutrition.json","schema":"docs/INTERFACE.md#营养模块-nutritionjson","hint":"餐卡点餐流水 → 六维营养得分与周报"}],"extensionSlots":[{"id":"ext-slot-1","name":"新分项目 A（预留）","status":"empty","hint":"在 data/extensions.json 里追加一条配置即可上线一个空白模块页"},{"id":"ext-slot-2","name":"新分项目 B（预留）","status":"empty","hint":"支持 KPI / 折线 / 柱状 / 环形 / 表格 五种通用卡片，无需改前端代码"}],"thresholds":{"crowd":20,"busy":10,"peoplePerMinute":2.6},"students":["高二(3)班 · 王小明","高二(3)班 · 李佳怡","高二(3)班 · 陈子豪","高一(1)班 · 赵雨欣","高一(1)班 · 孙浩然","高一(2)班 · 周思远","高一(2)班 · 吴偲玥","高三(1)班 · 郑一诺","高三(1)班 · 冯启航","高三(2)班 · 许安琪","高三(2)班 · 林嘉树","高二(1)班 · 何若溪"],"updated":"2026-11-17 22:24"},"overview":{"hero":{"eyebrow":"CONTROL CENTER / OVERVIEW","title":"人大附中智慧食堂综合调度中心","subtitle":"排队拥堵监控 · 楼层分流建议 · 营养健康分析 —— 三模块统一接入的调度中枢","stats":[{"label":"SYSTEM","value":"运行中","sub":"三模块接口预留"},{"label":"QUEUE","value":"57 人","sub":"当前在途排队"},{"label":"ALERTS","value":"3 条","sub":"今日累计告警"}]},"kpis":[{"icon":"people","label":"今日就餐人次","value":"1,286","unit":"人次","tone":"ok","trend":"up","delta":"+4.9% 环比昨日","source":"餐卡刷卡记录"},{"icon":"queue","label":"当前排队总人数","value":"57","unit":"人","tone":"danger","trend":"flat","delta":"1 个窗口拥挤","source":"排队监控模块"},{"icon":"clock","label":"今日平均等待","value":"7.5","unit":"分钟","tone":"warn","trend":"down","delta":"-0.1 分钟 环比昨日","source":"取餐时间统计"},{"icon":"camera","label":"系统在线摄像头","value":"6/8","unit":"路","tone":"danger","trend":"flat","delta":"离线 2 路","source":"心跳检测"}],"hourly":{"categories":["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"],"values":[60,45,20,15,210,430,160,30,20,25,190,360,120,40]},"modules":[{"icon":"grid","name":"调度中心前端","status":"running","detail":"时延 12 ms","owner":"平台组"},{"icon":"queue","name":"排队检测接口","status":"pending","detail":"尚未联通","owner":"CV 组"},{"icon":"layers","name":"楼层汇总接口","status":"pending","detail":"尚未联通","owner":"硬件组"},{"icon":"nutrition","name":"营养数据接口","status":"mock","detail":"时延 35 ms","owner":"数据组"},{"icon":"camera","name":"摄像头网关","status":"running","detail":"6/8 在线","owner":"平台组"},{"icon":"database","name":"本地数据中台","status":"running","detail":"时延 3 ms","owner":"平台组"}],"floors":[{"name":"1 楼","usage":83.8,"tone":"danger"},{"name":"2 楼","usage":61.2,"tone":"ok"},{"name":"3 楼","usage":52.8,"tone":"ok"}],"alerts":[{"time":"22:16","level":"critical","text":"1号窗口当前拥挤，排队 23 人，超过 20 人阈值"},{"time":"22:00","level":"warn","text":"CAM-07（一层入口通道）心跳丢失，已持续 18 分钟"},{"time":"21:37","level":"warn","text":"5号窗口等待时间升至 5 分钟，触发关注阈值"},{"time":"21:03","level":"info","text":"高二(3)班营养周报生成完成，已推送 34 位家长"},{"time":"20:18","level":"info","text":"餐卡点餐记录同步完成，新增 1,286 条"}],"resources":[{"name":"摄像头在线率","value":75},{"name":"接口连通率","value":67},{"name":"数据同步完整率","value":98}]},"queue":{"hero":{"eyebrow":"CONTROL CENTER / QUEUE","title":"排队拥堵监控","subtitle":"摄像头 → YOLO 人体检测 → 窗口分区计数：实时判断各窗口拥挤度","stats":[{"label":"QUEUE NOW","value":"57 人","sub":"六个窗口合计"},{"label":"BUSIEST","value":"1号窗口","sub":"当前最拥挤窗口"},{"label":"UPDATED","value":"22:18","sub":"最近一次快照"}]},"threshold":20,"kpis":[{"icon":"people","label":"当前排队总人数","value":"57","unit":"人","tone":"danger","delta":"1 个窗口拥挤","source":"实时快照"},{"icon":"target","label":"最拥挤窗口","value":"1号窗口","unit":"","tone":"danger","delta":"排队 23 人","source":"盖饭"},{"icon":"clock","label":"窗口平均等待","value":"3.7","unit":"分钟","tone":"warn","delta":"按 2.6 人/分钟估算","source":"排队模型"},{"icon":"camera","label":"摄像头在线","value":"6/8","unit":"路","tone":"danger","delta":"2 路离线待修","source":"心跳检测"}],"alert":"1号窗口 · 盖饭 当前拥挤，排队 23 人（超过 20 人阈值），约 9 分钟 —— 建议引导至「楼层分流建议」查看其他楼层窗口。","windows":[{"name":"1号窗口 · 盖饭","floor":"1F","people":23,"wait":"约 9 分钟","level":"拥挤"},{"name":"2号窗口 · 面食","floor":"1F","people":8,"wait":"约 3 分钟","level":"通畅"},{"name":"3号窗口 · 小炒","floor":"1F","people":5,"wait":"约 2 分钟","level":"通畅"},{"name":"4号窗口 · 汤粥主食","floor":"2F","people":3,"wait":"约 1 分钟","level":"通畅"},{"name":"5号窗口 · 水果酸奶","floor":"2F","people":12,"wait":"约 5 分钟","level":"一般"},{"name":"6号窗口 · 清真窗口","floor":"3F","people":6,"wait":"约 2 分钟","level":"通畅"}],"trend":{"categories":["19:18","19:28","19:38","19:48","19:58","20:08","20:18","20:28","20:38","20:48","20:58","21:08","21:18","21:28","21:38","21:48","21:58","22:08","22:18"],"series":[{"name":"1号窗口","values":[23,27,21,25,22,24,20,24,25,25,24,25,22,24,23,23,23,23,23]},{"name":"2号窗口","values":[7,7,5,10,6,7,7,8,6,8,8,8,7,7,8,8,8,8,8]},{"name":"3号窗口","values":[5,3,4,4,2,5,5,4,5,6,6,4,4,6,5,5,5,5,5]},{"name":"4号窗口","values":[1,5,7,1,0,6,0,2,1,1,3,3,2,4,3,4,3,3,3]},{"name":"5号窗口","values":[13,12,16,14,11,11,9,14,12,10,11,11,11,11,13,11,12,12,12]},{"name":"6号窗口","values":[4,8,3,3,8,9,5,7,7,6,5,6,6,7,6,6,6,6,6]}]},"cameras":[{"id":"CAM-01","name":"一层 · 1号窗口","floor":"1F","status":"在线","resolution":"1920×1080","fps":25},{"id":"CAM-02","name":"一层 · 2号窗口","floor":"1F","status":"在线","resolution":"1920×1080","fps":25},{"id":"CAM-03","name":"一层 · 3号窗口","floor":"1F","status":"在线","resolution":"1280×720","fps":25},{"id":"CAM-04","name":"二层 · 4号窗口","floor":"2F","status":"在线","resolution":"1920×1080","fps":25},{"id":"CAM-05","name":"二层 · 5号窗口","floor":"2F","status":"在线","resolution":"1280×720","fps":15},{"id":"CAM-06","name":"三层 · 6号窗口","floor":"3F","status":"在线","resolution":"1920×1080","fps":25},{"id":"CAM-07","name":"一层 · 入口通道","floor":"1F","status":"离线","resolution":"1920×1080","fps":25},{"id":"CAM-08","name":"三层 · 就餐区","floor":"3F","status":"离线","resolution":"1280×720","fps":0}]},"floors":{"hero":{"eyebrow":"CONTROL CENTER / FLOOR","title":"楼层分流建议","subtitle":"汇总各楼层人流与座位占用，给出「去哪一层就餐最省时间」的建议","stats":[{"label":"DINERS","value":"1096 人","sub":"三层在餐总人数"},{"label":"RECOMMEND","value":"三楼","sub":"当前推荐楼层"},{"label":"SEATS","value":"1360 座","sub":"三个楼层座位总量"}]},"advice":{"title":"现在请前往「三楼」就餐","reason":"该楼层在座 190 / 座位 360 个，座位使用率 52.8%，为三层中最低；按当前排队模型估算，可直接打饭的概率最高。","badges":["数据完整性校验通过","建议前往耗时约 2 分钟"]},"kpis":[{"icon":"seat","label":"一楼座位使用率","value":"83.8","unit":"%","tone":"danger","delta":"在座 402 / 480","source":"floor_stats"},{"icon":"seat","label":"二楼座位使用率","value":"61.2","unit":"%","tone":"ok","delta":"在座 318 / 520","source":"floor_stats"},{"icon":"seat","label":"三楼座位使用率","value":"52.8","unit":"%","tone":"ok","delta":"在座 190 / 360","source":"floor_stats"},{"icon":"clock","label":"推荐楼层等待","value":"2","unit":"分钟","tone":"ok","delta":"按排队模型估算","source":"分流算法"}],"floors":[{"name":"一楼","seats":480,"occupied":402,"usage":83.8,"wait":"约 10 分钟","tone":"danger"},{"name":"二楼","seats":520,"occupied":318,"usage":61.2,"wait":"约 2 分钟","tone":"ok"},{"name":"三楼","seats":360,"occupied":190,"usage":52.8,"wait":"约 2 分钟","tone":"ok"}],"share":[{"name":"一楼","value":479,"tone":"accent"},{"name":"二楼","value":385,"tone":"ok"},{"name":"三楼","value":232,"tone":"warn"}],"flow":{"categories":["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"],"series":[{"name":"1楼","values":[27,19,9,7,99,191,80,14,8,10,88,180,53,19],"tone":"accent"},{"name":"2楼","values":[21,13,6,5,64,130,55,10,5,9,63,112,38,11],"tone":"ok"},{"name":"3楼","values":[12,9,4,2,47,94,36,6,4,4,41,76,25,8],"tone":"warn"}]}},"nutrition":{"hero":null,"students":[{"label":"高二(3)班 · 王小明","id":"S2023001","name":"王小明","class_name":"高二(3)班","card_no":"6221 0034","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1819","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"416.8","unit":"元","tone":"flat","delta":"日均 52.1 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"74","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,65.5,45.1,84.4,60.8,87.5],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":45.1,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"钙铁锌","score":60.8,"tip":"每天一份奶制品，红肉每周 2-3 次"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1170.0,2900.0,1830.0,2070.0,1690.0,1650.0,1690.0,1550.0],"protein":[66.7,142.0,73.5,100.0,103.5,90.5,80.7,83.3]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:24","meal":"晚餐","dish":"香菇青菜","kcal":"110","amount":"¥4.9"},{"time":"11-17 17:08","meal":"晚餐","dish":"清蒸鱼","kcal":"290","amount":"¥15.9"},{"time":"11-17 12:50","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥10.6"},{"time":"11-17 12:23","meal":"午餐","dish":"牛肉拉面","kcal":"610","amount":"¥14.8"},{"time":"11-16 17:29","meal":"晚餐","dish":"牛肉手抓饭","kcal":"700","amount":"¥17.9"},{"time":"11-16 17:24","meal":"晚餐","dish":"清炒时蔬","kcal":"120","amount":"¥4.9"},{"time":"11-16 12:41","meal":"午餐","dish":"红烧排骨","kcal":"580","amount":"¥14.8"},{"time":"11-16 12:15","meal":"午餐","dish":"酸奶","kcal":"140","amount":"¥3.9"},{"time":"11-16 07:32","meal":"早餐","dish":"木耳炒山药","kcal":"150","amount":"¥5.8"},{"time":"11-15 17:46","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.3"}],"pushes":[{"day":"11-11","channel":"微信服务号","status":"成功"}]},{"label":"高二(3)班 · 李佳怡","id":"S2023002","name":"李佳怡","class_name":"高二(3)班","card_no":"6221 0117","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1779","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"375.3","unit":"元","tone":"flat","delta":"日均 46.9 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"75","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,69.7,46.2,77.0,58.5,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":46.2,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"钙铁锌","score":58.5,"tip":"每天一份奶制品，红肉每周 2-3 次"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1460.0,1020.0,1860.0,1710.0,1460.0,2210.0,2810.0,1700.0],"protein":[61.2,43.0,97.0,98.7,71.5,91.7,122.5,101.5]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:09","meal":"晚餐","dish":"小米粥","kcal":"130","amount":"¥3.0"},{"time":"11-17 17:05","meal":"晚餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥14.9"},{"time":"11-17 12:21","meal":"午餐","dish":"香煎鸡胸","kcal":"320","amount":"¥12.8"},{"time":"11-17 12:03","meal":"午餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.3"},{"time":"11-17 07:09","meal":"早餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.5"},{"time":"11-16 17:24","meal":"晚餐","dish":"清炒时蔬","kcal":"120","amount":"¥5.7"},{"time":"11-16 17:16","meal":"晚餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥15.2"},{"time":"11-16 12:40","meal":"午餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥14.8"},{"time":"11-16 12:14","meal":"午餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥17.4"},{"time":"11-16 07:14","meal":"早餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.7"}],"pushes":[{"day":"11-11","channel":"微信服务号","status":"成功"}]},{"label":"高二(3)班 · 陈子豪","id":"S2023003","name":"陈子豪","class_name":"高二(3)班","card_no":"6221 0208","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1458","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"322.2","unit":"元","tone":"flat","delta":"日均 40.3 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"71","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,56.2,37.9,80.0,54.7,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":37.9,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"钙铁锌","score":54.7,"tip":"每天一份奶制品，红肉每周 2-3 次"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1590.0,1760.0,1090.0,2060.0,410.0,2150.0,1480.0,1120.0],"protein":[67.7,89.5,48.0,108.7,18.7,123.0,54.7,73.0]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:11","meal":"晚餐","dish":"香煎鸡胸","kcal":"320","amount":"¥13.1"},{"time":"11-17 17:02","meal":"晚餐","dish":"清炒时蔬","kcal":"120","amount":"¥4.8"},{"time":"11-17 12:48","meal":"午餐","dish":"酸奶","kcal":"140","amount":"¥4.4"},{"time":"11-17 12:46","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.8"},{"time":"11-16 17:45","meal":"晚餐","dish":"酸奶","kcal":"140","amount":"¥3.9"},{"time":"11-16 17:16","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥15.5"},{"time":"11-16 12:46","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥12.6"},{"time":"11-16 12:42","meal":"午餐","dish":"木耳炒山药","kcal":"150","amount":"¥6.8"},{"time":"11-15 17:31","meal":"晚餐","dish":"牛肉拉面","kcal":"610","amount":"¥13.0"},{"time":"11-15 17:15","meal":"晚餐","dish":"牛肉拉面","kcal":"610","amount":"¥14.8"}],"pushes":[]},{"label":"高一(1)班 · 赵雨欣","id":"S2023004","name":"赵雨欣","class_name":"高一(1)班","card_no":"6221 0326","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1656","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"387.1","unit":"元","tone":"flat","delta":"日均 48.4 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"76","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,58.4,45.0,89.6,62.9,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":45.0,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"碳水化合物","score":58.4,"tip":"主食别只吃精米面，可搭配杂粮饭或玉米"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1840.0,1970.0,1740.0,620.0,790.0,2270.0,2370.0,1650.0],"protein":[104.0,90.7,104.3,46.3,50.3,113.7,124.5,88.7]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:23","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.4"},{"time":"11-17 17:10","meal":"晚餐","dish":"清蒸鱼","kcal":"290","amount":"¥15.3"},{"time":"11-17 12:44","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥12.6"},{"time":"11-17 12:07","meal":"午餐","dish":"时令水果拼盘","kcal":"110","amount":"¥4.9"},{"time":"11-17 07:26","meal":"早餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥13.6"},{"time":"11-16 17:31","meal":"晚餐","dish":"香煎鸡胸","kcal":"320","amount":"¥12.8"},{"time":"11-16 17:17","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥14.8"},{"time":"11-16 12:21","meal":"午餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥14.3"},{"time":"11-16 12:00","meal":"午餐","dish":"小米粥","kcal":"130","amount":"¥3.0"},{"time":"11-16 07:43","meal":"早餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥14.9"}],"pushes":[]},{"label":"高一(1)班 · 孙浩然","id":"S2023005","name":"孙浩然","class_name":"高一(1)班","card_no":"6221 0415","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1551","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"376.9","unit":"元","tone":"flat","delta":"日均 47.1 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"83","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,59.4,55.3,100.0,83.4,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":55.3,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"碳水化合物","score":59.4,"tip":"主食别只吃精米面，可搭配杂粮饭或玉米"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1680.0,1040.0,1680.0,2050.0,1740.0,1000.0,1060.0,2160.0],"protein":[68.2,112.0,74.2,96.7,96.0,30.7,35.5,95.3]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:29","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.4"},{"time":"11-17 17:13","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥15.2"},{"time":"11-17 12:26","meal":"午餐","dish":"牛肉拉面","kcal":"610","amount":"¥13.0"},{"time":"11-17 12:06","meal":"午餐","dish":"牛肉手抓饭","kcal":"700","amount":"¥15.4"},{"time":"11-17 07:02","meal":"早餐","dish":"香菇青菜","kcal":"110","amount":"¥5.1"},{"time":"11-16 17:44","meal":"晚餐","dish":"小米粥","kcal":"130","amount":"¥3.1"},{"time":"11-16 17:43","meal":"晚餐","dish":"香菇青菜","kcal":"110","amount":"¥5.3"},{"time":"11-16 12:38","meal":"午餐","dish":"木耳炒山药","kcal":"150","amount":"¥6.7"},{"time":"11-16 12:00","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥10.8"},{"time":"11-16 07:17","meal":"早餐","dish":"小米粥","kcal":"130","amount":"¥2.9"}],"pushes":[]},{"label":"高一(2)班 · 周思远","id":"S2023006","name":"周思远","class_name":"高一(2)班","card_no":"6221 0509","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"2048","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"456.9","unit":"元","tone":"flat","delta":"日均 57.1 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"78","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,74.5,58.2,93.8,72.5,67.4],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":58.2,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"脂肪控制","score":67.4,"tip":"少选油炸、红烧与重油菜品"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[2620.0,1820.0,2010.0,2170.0,860.0,2270.0,2360.0,2270.0],"protein":[126.3,89.9,81.8,104.3,46.1,126.5,133.0,122.5]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:30","meal":"晚餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.9"},{"time":"11-17 17:24","meal":"晚餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥13.5"},{"time":"11-17 12:25","meal":"午餐","dish":"清蒸鱼","kcal":"290","amount":"¥18.1"},{"time":"11-17 12:07","meal":"午餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.0"},{"time":"11-16 17:46","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥2.9"},{"time":"11-16 17:39","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥13.7"},{"time":"11-16 12:31","meal":"午餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥15.2"},{"time":"11-16 12:23","meal":"午餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.9"},{"time":"11-16 07:09","meal":"早餐","dish":"香煎鸡胸","kcal":"320","amount":"¥13.1"},{"time":"11-15 17:30","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥14.0"}],"pushes":[]},{"label":"高一(2)班 · 吴偲玥","id":"S2023007","name":"吴偲玥","class_name":"高一(2)班","card_no":"6221 0621","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1691","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"389.3","unit":"元","tone":"flat","delta":"日均 48.7 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"74","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,62.7,42.0,82.5,58.2,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":42.0,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"钙铁锌","score":58.2,"tip":"每天一份奶制品，红肉每周 2-3 次"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1440.0,2000.0,2260.0,1590.0,2290.0,940.0,1160.0,1850.0],"protein":[68.2,96.0,119.0,68.3,115.5,43.3,68.0,109.0]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:40","meal":"晚餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.6"},{"time":"11-17 17:02","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.3"},{"time":"11-17 12:39","meal":"午餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥2.9"},{"time":"11-17 12:03","meal":"午餐","dish":"清蒸鱼","kcal":"290","amount":"¥18.4"},{"time":"11-17 07:18","meal":"早餐","dish":"牛肉手抓饭","kcal":"700","amount":"¥15.8"},{"time":"11-16 17:31","meal":"晚餐","dish":"清炒时蔬","kcal":"120","amount":"¥5.2"},{"time":"11-16 17:14","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.1"},{"time":"11-16 12:17","meal":"午餐","dish":"清蒸鱼","kcal":"290","amount":"¥18.2"},{"time":"11-16 12:07","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.1"},{"time":"11-16 07:26","meal":"早餐","dish":"清炒时蔬","kcal":"120","amount":"¥5.1"}],"pushes":[{"day":"11-11","channel":"微信服务号","status":"失败"}]},{"label":"高三(1)班 · 郑一诺","id":"S2023008","name":"郑一诺","class_name":"高三(1)班","card_no":"6221 0712","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1202","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"329.7","unit":"元","tone":"flat","delta":"日均 41.2 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"76","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,37.1,46.7,100.0,74.6,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"碳水化合物","score":37.1,"tip":"主食别只吃精米面，可搭配杂粮饭或玉米"},{"name":"膳食纤维","score":46.7,"tip":"每天一份深色蔬菜，外加一份水果"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[2090.0,960.0,510.0,1300.0,1460.0,1660.0,1090.0,550.0],"protein":[184.0,84.9,19.7,70.5,73.0,64.4,43.3,19.3]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:47","meal":"晚餐","dish":"香菇青菜","kcal":"110","amount":"¥5.6"},{"time":"11-17 17:30","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.1"},{"time":"11-17 12:32","meal":"午餐","dish":"时令水果拼盘","kcal":"110","amount":"¥5.6"},{"time":"11-17 12:24","meal":"午餐","dish":"香菇青菜","kcal":"110","amount":"¥5.5"},{"time":"11-17 07:34","meal":"早餐","dish":"小米粥","kcal":"130","amount":"¥3.2"},{"time":"11-16 17:10","meal":"晚餐","dish":"香菇青菜","kcal":"110","amount":"¥5.3"},{"time":"11-16 17:09","meal":"晚餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥14.5"},{"time":"11-16 12:18","meal":"午餐","dish":"时令水果拼盘","kcal":"110","amount":"¥5.7"},{"time":"11-16 12:07","meal":"午餐","dish":"香菇青菜","kcal":"110","amount":"¥5.2"},{"time":"11-16 07:18","meal":"早餐","dish":"酸奶","kcal":"140","amount":"¥4.2"}],"pushes":[]},{"label":"高三(1)班 · 冯启航","id":"S2023009","name":"冯启航","class_name":"高三(1)班","card_no":"6221 0803","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1492","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"372.7","unit":"元","tone":"flat","delta":"日均 46.6 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"70","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,49.5,36.0,79.5,53.4,100.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":36.0,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"碳水化合物","score":49.5,"tip":"主食别只吃精米面，可搭配杂粮饭或玉米"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1630.0,1460.0,1640.0,970.0,780.0,2430.0,1440.0,1590.0],"protein":[88.0,121.0,74.0,85.0,52.5,165.0,64.3,67.4]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:45","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥15.4"},{"time":"11-17 17:31","meal":"晚餐","dish":"酸奶","kcal":"140","amount":"¥4.4"},{"time":"11-17 12:38","meal":"午餐","dish":"红烧排骨","kcal":"580","amount":"¥16.6"},{"time":"11-17 12:33","meal":"午餐","dish":"时令水果拼盘","kcal":"110","amount":"¥5.2"},{"time":"11-17 07:18","meal":"早餐","dish":"时令水果拼盘","kcal":"110","amount":"¥5.4"},{"time":"11-16 17:40","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.0"},{"time":"11-16 17:10","meal":"晚餐","dish":"香菇青菜","kcal":"110","amount":"¥5.1"},{"time":"11-16 12:40","meal":"午餐","dish":"牛肉拉面","kcal":"610","amount":"¥13.1"},{"time":"11-16 12:10","meal":"午餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.3"},{"time":"11-16 07:49","meal":"早餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.9"}],"pushes":[]},{"label":"高三(2)班 · 许安琪","id":"S2023010","name":"许安琪","class_name":"高三(2)班","card_no":"6221 0918","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1841","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"407.7","unit":"元","tone":"flat","delta":"日均 51.0 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"82","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,70.5,53.9,100.0,74.8,92.4],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":53.9,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"碳水化合物","score":70.5,"tip":"主食别只吃精米面，可搭配杂粮饭或玉米"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[1600.0,1150.0,1700.0,2010.0,2970.0,1020.0,1740.0,2540.0],"protein":[80.0,46.7,100.5,88.5,150.0,35.4,89.2,113.5]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:10","meal":"晚餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.2"},{"time":"11-17 17:09","meal":"晚餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.2"},{"time":"11-17 12:26","meal":"午餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥14.7"},{"time":"11-17 12:14","meal":"午餐","dish":"牛肉拉面","kcal":"610","amount":"¥14.4"},{"time":"11-17 07:25","meal":"早餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥10.6"},{"time":"11-16 17:27","meal":"晚餐","dish":"清蒸鱼","kcal":"290","amount":"¥16.2"},{"time":"11-16 17:20","meal":"晚餐","dish":"时令水果拼盘","kcal":"110","amount":"¥5.1"},{"time":"11-16 12:48","meal":"午餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥16.9"},{"time":"11-16 12:10","meal":"午餐","dish":"清炒时蔬","kcal":"120","amount":"¥5.6"},{"time":"11-16 07:19","meal":"早餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.1"}],"pushes":[]},{"label":"高三(2)班 · 林嘉树","id":"S2023011","name":"林嘉树","class_name":"高三(2)班","card_no":"6221 1005","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"1964","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"448.7","unit":"元","tone":"flat","delta":"日均 56.1 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"67","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,65.5,44.2,74.4,56.3,62.1],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":44.2,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"钙铁锌","score":56.3,"tip":"每天一份奶制品，红肉每周 2-3 次"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[2170.0,1180.0,2580.0,1350.0,2060.0,2030.0,1570.0,2770.0],"protein":[90.2,46.7,116.0,101.5,106.5,134.0,85.5,152.5]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:47","meal":"晚餐","dish":"红烧排骨","kcal":"580","amount":"¥14.8"},{"time":"11-17 17:20","meal":"晚餐","dish":"鱼香肉丝盖饭","kcal":"650","amount":"¥13.6"},{"time":"11-17 12:25","meal":"午餐","dish":"香煎鸡胸","kcal":"320","amount":"¥13.6"},{"time":"11-17 12:03","meal":"午餐","dish":"土豆牛肉盖饭","kcal":"680","amount":"¥17.7"},{"time":"11-17 07:03","meal":"早餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.5"},{"time":"11-16 17:30","meal":"晚餐","dish":"宫保鸡丁盖饭","kcal":"620","amount":"¥15.4"},{"time":"11-16 17:13","meal":"晚餐","dish":"清炒时蔬","kcal":"120","amount":"¥5.7"},{"time":"11-16 12:22","meal":"午餐","dish":"清蒸鱼","kcal":"290","amount":"¥15.9"},{"time":"11-16 12:00","meal":"午餐","dish":"番茄鸡蛋面","kcal":"540","amount":"¥11.4"},{"time":"11-15 17:18","meal":"晚餐","dish":"红烧排骨","kcal":"580","amount":"¥17.0"}],"pushes":[]},{"label":"高二(1)班 · 何若溪","id":"S2023012","name":"何若溪","class_name":"高二(1)班","card_no":"6221 1130","week":"2026-W46","kpis":[{"icon":"nutrition","label":"日均热量","value":"2015","unit":"kcal","tone":"ok","delta":"推荐 2000 kcal","source":"点餐记录"},{"icon":"shield","label":"蛋白质达标率","value":"100","unit":"%","tone":"ok","delta":"推荐 60 g/日","source":"菜品营养库"},{"icon":"wallet","label":"本周餐费","value":"438.8","unit":"元","tone":"flat","delta":"日均 54.9 元","source":"消费记录"},{"icon":"target","label":"综合营养得分","value":"69","unit":"分","tone":"ok","delta":"六维加权平均","source":"营养模型"}],"radar":{"axes":["蛋白质","碳水化合物","膳食纤维","维生素","钙铁锌","脂肪控制"],"actual":[100.0,71.2,43.5,73.5,55.5,69.0],"standard":[100,100,100,100,100,100]},"advice":[{"name":"膳食纤维","score":43.5,"tip":"每天一份深色蔬菜，外加一份水果"},{"name":"钙铁锌","score":55.5,"tip":"每天一份奶制品，红肉每周 2-3 次"}],"trend":{"categories":["11/10","11/11","11/12","11/13","11/14","11/15","11/16","11/17"],"kcal":[2050.0,2230.0,1300.0,2750.0,1400.0,1960.0,2350.0,2080.0],"protein":[86.8,110.5,80.7,125.5,106.2,91.3,142.0,111.5]},"meals":[{"name":"晚餐","value":56.2,"tone":"accent"},{"name":"午餐","value":31.8,"tone":"ok"},{"name":"早餐","value":12.0,"tone":"warn"}],"records":[{"time":"11-17 17:48","meal":"晚餐","dish":"红烧排骨","kcal":"580","amount":"¥16.5"},{"time":"11-17 17:14","meal":"晚餐","dish":"红烧排骨","kcal":"580","amount":"¥14.5"},{"time":"11-17 12:41","meal":"午餐","dish":"小米粥","kcal":"130","amount":"¥2.9"},{"time":"11-17 12:08","meal":"午餐","dish":"牛肉手抓饭","kcal":"700","amount":"¥17.6"},{"time":"11-17 07:05","meal":"早餐","dish":"紫菜蛋花汤","kcal":"90","amount":"¥3.4"},{"time":"11-16 17:05","meal":"晚餐","dish":"酸奶","kcal":"140","amount":"¥4.4"},{"time":"11-16 17:03","meal":"晚餐","dish":"牛肉手抓饭","kcal":"700","amount":"¥16.1"},{"time":"11-16 12:24","meal":"午餐","dish":"香煎鸡胸","kcal":"320","amount":"¥12.8"},{"time":"11-16 12:15","meal":"午餐","dish":"牛肉拉面","kcal":"610","amount":"¥13.6"},{"time":"11-16 07:04","meal":"早餐","dish":"红烧排骨","kcal":"580","amount":"¥14.4"}],"pushes":[]}]},"extensions":{"intro":{"title":"扩展与接入","subtitle":"平台已预留「模块注册 + 数据源替换」两层接口，新分项目按约定写 JSON 即可上线"},"slots":[{"id":"queue","name":"排队拥堵监控","owner":"CV 组","status":"预留中","type":"模块","hint":"摄像头 → YOLO → 窗口级人数，写入 data/queue.json"},{"id":"floors","name":"楼层分流建议","owner":"硬件组","status":"预留中","type":"模块","hint":"多路摄像头汇总 → 楼层人流 / 座位占用，写入 data/floors.json"},{"id":"nutrition","name":"营养健康分析","owner":"数据组","status":"预留中","type":"模块","hint":"餐卡流水 → 六维营养，写入 data/nutrition.json"},{"id":"slot-a","name":"新分项目 A","owner":"待认领","status":"空槽位","type":"通用模块","hint":"编辑 data/extensions.json 增加配置，即可生成一个通用模块页"},{"id":"slot-b","name":"新分项目 B","owner":"待认领","status":"空槽位","type":"通用模块","hint":"通用卡片支持 KPI / 折线 / 柱状 / 环形 / 表格"}],"contract":[{"title":"1. 数据接口（推荐）","lines":["把结果写成 web/data/<模块>.json，字段见 docs/INTERFACE.md","页面启动时自动 fetch，无需改任何前端代码","适合：离线演示、答辩现场、算法同学单独跑脚本"]},{"title":"2. JS 数据源（实时）","lines":["在 assets/js/modules/*.js 里调用 Platform.registerDataSource('queue', fn)","fn 返回与 JSON 同构的对象，平台会用它覆盖 mock 数据","适合：已有后端 / WebSocket / 行空板串口转发"]},{"title":"3. 页面扩展（新分项目）","lines":["Platform.registerPage({id, label, icon, render}) 增加一个导航页","或在 data/extensions.json 里声明通用模块（零代码）","适合：合作关系方独立开发自己的板块"]}],"genericDemo":{"name":"示例：翻台率监控（占位）","kpis":[{"label":"平均翻台率","value":"3.2","unit":"次/桌","delta":"示例数据","tone":"ok"},{"label":"最长停留","value":"38","unit":"分钟","delta":"示例数据","tone":"warn"},{"label":"空闲桌数","value":"24","unit":"桌","delta":"示例数据","tone":"ok"}],"note":"这个卡片是通用渲染器跑出来的：只要 data/extensions.json 里加一段同样的结构，就能上线新分项目。"}}};
+
+</script>
+  <!-- 图标（内联 SVG，无 emoji、无外部依赖） -->
+  <script>
+/* ============================================================
+   图标库：统一 24×24 线性 SVG（stroke=currentColor）
+   用 icon(name, size) 取字符串，插入 innerHTML 即可
+   —— 不依赖任何图标字体 / CDN，断网也能正常显示
+   ============================================================ */
+(function (global) {
+  const P = {
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+    leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+    camera: '<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>',
+    server: '<rect x="2" y="3" width="20" height="8" rx="2"/><rect x="2" y="13" width="20" height="8" rx="2"/><path d="M6 7h.01"/><path d="M6 17h.01"/>',
+    wifi: '<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/>',
+    cpu: '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/>',
+    bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+    trend: '<path d="m3 17 6-6 4 4 8-8"/><path d="M17 7h4v4"/>',
+    pie: '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+    seat: '<path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3"/><path d="M3 11a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2Z"/><path d="M5 17v3M19 17v3"/>',
+    wallet: '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M18 12h.01"/>',
+    send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+    refresh: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
+    check: '<path d="m20 6-11 11-5-5"/>',
+    shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    filter: '<path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/>',
+    plug: '<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
+    code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+    book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+    arrow: '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-5"/><path d="M12 8h.01"/>',
+    flame: '<path d="M12 22c4 0 7-2.7 7-6.5 0-3.2-2.2-5.4-3.6-7.3C14.2 6.4 13 4.6 13 2c-2.5 1.8-4 4.3-4 6.5 0 1.4.5 2.5.5 2.5S8 10.4 7 9c-.7 1.3-2 3.2-2 6.5C5 19.3 8 22 12 22Z"/>',
+    meal: '<path d="M3 2v7a3 3 0 0 0 6 0V2"/><path d="M6 9v13"/><path d="M18 2c-1.5 2-2 4-2 7s.5 3 2 3 2-.5 2-3-.5-5-2-7Z"/><path d="M18 12v10"/>',
+    plus: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'
+  };
+
+  // 数据里用的一些别名（data/*.json 里的 icon 字段）
+  const ALIAS = { people: 'users', queue: 'users', nutrition: 'leaf', overview: 'grid', floors: 'layers', wallet2: 'wallet', puzzle: 'plug' };
+
+  global.ICONS = Object.assign({}, P);
+
+  /**
+   * 取一个 SVG 图标字符串
+   * @param {string} name  图标名（见上表）
+   * @param {number} size  像素尺寸
+   * @param {string} cls   附加 class
+   */
+  global.icon = function (name, size, cls) {
+    const key = ALIAS[name] || name;
+    const path = P[key] || P.info;
+    const s = size || 16;
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" ' +
+      'class="' + (cls || '') + '" aria-hidden="true">' + path + '</svg>';
+  };
+})(window);
+
+</script>
+  <!-- 轻量图表：纯 SVG 手写，不依赖任何 CDN，断网也能演示 -->
+  <script>
+/* ============================================================
+   轻量图表库：纯手写 SVG，不依赖 echarts / plotly / CDN
+   —— 单文件即可离线演示，答辩现场断网也不怕
+   —— 颜色全部走 CSS 变量，深浅主题切换自动跟随
+   —— 每个图都支持 opt.width 指定画布宽度：
+       半宽面板传 560，整屏通栏传 1180，字号才不会缩成蚂蚁
+   ============================================================ */
+(function (global) {
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+  function fmt(v, digits) {
+    if (v === null || v === undefined || isNaN(v)) return '--';
+    const d = digits === undefined ? 0 : digits;
+    return Number(v).toFixed(d).replace(/\.0+$/, '');
+  }
+  function fmtInt(v) {
+    return String(Math.round(Number(v) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  // 让刻度落在整数上：返回 { max, step }
+  function niceScale(maxValue, ticks) {
+    ticks = ticks || 4;
+    const raw = Math.max(maxValue, 1) / ticks;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+    return { max: step * ticks, step: step };
+  }
+
+  function svgWrap(w, h, body) {
+    return '<svg class="chart" viewBox="0 0 ' + w + ' ' + h +
+      '" preserveAspectRatio="xMidYMid meet" role="img" style="max-height:' + (h * 1.9).toFixed(0) + 'px">' +
+      body + '</svg>';
+  }
+
+  /* --------------------------------------------------------- 折线 / 面积 */
+  function line(opt) {
+    const labels = opt.labels || [];
+    const series = opt.series || [];
+    const W = opt.width || 760;
+    const h = opt.height || 230;
+    const pad = { l: 40, r: 16, t: 18, b: 28 };
+    const n = labels.length;
+    const all = series.reduce((a, s) => a.concat(s.values || []), []);
+    const scale = niceScale(Math.max.apply(null, all.concat([1])) * 1.15, 4);
+    const yMax = opt.yMax || scale.max;
+    const innerW = W - pad.l - pad.r;
+    const innerH = h - pad.t - pad.b;
+    const x = i => pad.l + (n <= 1 ? innerW / 2 : (i * innerW) / (n - 1));
+    const y = v => pad.t + innerH - (Math.max(0, v) / yMax) * innerH;
+
+    let g = '';
+    for (let k = 0; k <= 4; k++) {
+      const vy = pad.t + (innerH * k) / 4;
+      g += '<line x1="' + pad.l + '" y1="' + vy + '" x2="' + (W - pad.r) + '" y2="' + vy + '" stroke="var(--grid)"/>';
+      g += '<text x="' + (pad.l - 8) + '" y="' + (vy + 4) + '" text-anchor="end" font-size="11" fill="var(--dim)">' +
+        fmtInt(yMax - (yMax * k) / 4) + '</text>';
+    }
+
+    series.forEach((s, si) => {
+      const pts = (s.values || []).map((v, i) => [x(i), y(v)]);
+      if (!pts.length) return;
+      const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+      if (s.area !== false) {
+        const gid = 'grad' + si + '_' + Math.random().toString(36).slice(2, 7);
+        g += '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="' + (s.color || 'var(--accent)') + '" stop-opacity="0.30"/>' +
+          '<stop offset="100%" stop-color="' + (s.color || 'var(--accent)') + '" stop-opacity="0"/>' +
+          '</linearGradient></defs>';
+        g += '<path d="' + d + ' L' + pts[pts.length - 1][0].toFixed(1) + ' ' + (pad.t + innerH) +
+          ' L' + pts[0][0].toFixed(1) + ' ' + (pad.t + innerH) + ' Z" fill="url(#' + gid + ')"/>';
+      }
+      g += '<path d="' + d + '" fill="none" stroke="' + (s.color || 'var(--accent)') +
+        '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+      const last = pts[pts.length - 1];
+      g += '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.8" fill="' +
+        (s.color || 'var(--accent)') + '"/>';
+    });
+
+    if (opt.threshold && opt.threshold.value !== undefined) {
+      const ty = y(opt.threshold.value);
+      g += '<line x1="' + pad.l + '" y1="' + ty + '" x2="' + (W - pad.r) + '" y2="' + ty +
+        '" stroke="var(--danger)" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.85"/>';
+      g += '<text x="' + (pad.l + 6) + '" y="' + (ty - 6) + '" text-anchor="start" font-size="11" fill="var(--danger)">' +
+        esc(opt.threshold.label || '阈值') + '</text>';
+    }
+
+    (opt.markers || []).forEach(m => {
+      if (m.index === undefined || !labels[m.index]) return;
+      const mx = x(m.index), my = y(m.value);
+      g += '<circle cx="' + mx + '" cy="' + my + '" r="3.6" fill="var(--warn)" stroke="var(--panel)" stroke-width="1.5"/>';
+      g += '<text x="' + mx + '" y="' + (my - 11) + '" text-anchor="middle" font-size="11" fill="var(--warn)">' +
+        esc(m.label) + '</text>';
+    });
+
+    const step = Math.ceil(n / 8);
+    labels.forEach((lb, i) => {
+      if (i % step !== 0 && i !== n - 1) return;
+      g += '<text x="' + x(i) + '" y="' + (h - 9) + '" text-anchor="middle" font-size="11" fill="var(--dim)">' +
+        esc(lb) + '</text>';
+    });
+
+    return svgWrap(W, h, g);
+  }
+
+  /* --------------------------------------------------------- 柱状 + 阈值线 */
+  function bars(opt) {
+    const items = opt.items || [];
+    const W = opt.width || 760;
+    const h = opt.height || 240;
+    const pad = { l: 40, r: 16, t: 22, b: 34 };
+    const innerW = W - pad.l - pad.r;
+    const innerH = h - pad.t - pad.b;
+    const scale = niceScale(Math.max.apply(null, items.map(i => i.value).concat([1])) * 1.22, 4);
+    const yMax = opt.yMax || scale.max;
+    const band = innerW / Math.max(items.length, 1);
+    const bw = Math.min(band * 0.5, 52);
+    const y = v => pad.t + innerH - (Math.max(0, v) / yMax) * innerH;
+
+    let g = '';
+    for (let k = 0; k <= 4; k++) {
+      const vy = pad.t + (innerH * k) / 4;
+      g += '<line x1="' + pad.l + '" y1="' + vy + '" x2="' + (W - pad.r) + '" y2="' + vy + '" stroke="var(--grid)"/>';
+      g += '<text x="' + (pad.l - 8) + '" y="' + (vy + 4) + '" text-anchor="end" font-size="11" fill="var(--dim)">' +
+        fmtInt(yMax - (yMax * k) / 4) + '</text>';
+    }
+
+    items.forEach((it, i) => {
+      const cx = pad.l + band * i + band / 2;
+      const bh = Math.max(2, pad.t + innerH - y(it.value));
+      g += '<rect x="' + (cx - bw / 2) + '" y="' + y(it.value) + '" width="' + bw + '" height="' + bh +
+        '" rx="4" fill="' + (it.tone || 'var(--accent)') + '" opacity="0.92"/>';
+      g += '<text x="' + cx + '" y="' + (y(it.value) - 8) + '" text-anchor="middle" font-size="11.5" fill="var(--text)">' +
+        fmtInt(it.value) + (it.unit || '') + '</text>';
+      g += '<text x="' + cx + '" y="' + (h - 11) + '" text-anchor="middle" font-size="11" fill="var(--dim)">' +
+        esc(it.label) + '</text>';
+    });
+
+    if (opt.threshold && opt.threshold.value !== undefined) {
+      const ty = y(opt.threshold.value);
+      g += '<line x1="' + pad.l + '" y1="' + ty + '" x2="' + (W - pad.r) + '" y2="' + ty +
+        '" stroke="var(--danger)" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.85"/>';
+      g += '<text x="' + (W - pad.r) + '" y="' + (ty - 6) + '" text-anchor="end" font-size="11" fill="var(--danger)">' +
+        esc(opt.threshold.label || '阈值') + '</text>';
+    }
+    return svgWrap(W, h, g);
+  }
+
+  /* --------------------------------------------------------- 环形图 */
+  function donut(opt) {
+    const items = (opt.items || []).filter(i => i.value > 0);
+    const size = opt.size || 250;
+    const cx = size / 2, cy = size / 2;
+    const R = size / 2 - 8;
+    const r = R * 0.64;
+    const total = items.reduce((a, b) => a + b.value, 0) || 1;
+    const colors = ['var(--accent)', 'var(--ok)', 'var(--warn)', 'var(--accent2)', 'var(--danger)'];
+    let ang = -Math.PI / 2;
+    let g = '';
+
+    const arc = (a0, a1, ro, ri) => {
+      const p = (a, rad) => [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
+      const large = a1 - a0 > Math.PI ? 1 : 0;
+      const s1 = p(a0, ro), e1 = p(a1, ro), s2 = p(a1, ri), e2 = p(a0, ri);
+      return 'M' + s1[0].toFixed(2) + ' ' + s1[1].toFixed(2) +
+        ' A' + ro + ' ' + ro + ' 0 ' + large + ' 1 ' + e1[0].toFixed(2) + ' ' + e1[1].toFixed(2) +
+        ' L' + s2[0].toFixed(2) + ' ' + s2[1].toFixed(2) +
+        ' A' + ri + ' ' + ri + ' 0 ' + large + ' 0 ' + e2[0].toFixed(2) + ' ' + e2[1].toFixed(2) + ' Z';
+    };
+
+    items.forEach((it, i) => {
+      const a0 = ang, a1 = ang + (it.value / total) * Math.PI * 2;
+      ang = a1;
+      const color = it.color || colors[i % colors.length];
+      const pad = 0.012;
+      g += '<path d="' + arc(a0 + pad, Math.max(a0 + pad, a1 - pad), R, r) + '" fill="' + color + '" opacity="0.95"/>';
+      const mid = (a0 + a1) / 2;
+      const pct = (it.value / total) * 100;
+      if (pct >= 6) {
+        const lx = cx + ((R + r) / 2) * Math.cos(mid);
+        const ly = cy + ((R + r) / 2) * Math.sin(mid);
+        g += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="middle" font-size="12" ' +
+          'fill="#fff" font-weight="600">' + pct.toFixed(1) + '%</text>';
+      }
+    });
+
+    g += '<text x="' + cx + '" y="' + (cy - 3) + '" text-anchor="middle" font-size="21" font-weight="700" fill="var(--text)">' +
+      esc(opt.centerValue !== undefined ? opt.centerValue : fmtInt(total)) + '</text>';
+    g += '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="11" fill="var(--dim)">' +
+      esc(opt.centerLabel || '总计') + '</text>';
+
+    const legend = items.map((it, i) =>
+      '<span><i style="background:' + (it.color || colors[i % colors.length]) + '"></i>' + esc(it.label) + '</span>').join('');
+
+    return '<div style="display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap">' +
+      '<svg viewBox="0 0 ' + size + ' ' + size + '" style="width:' + size + 'px;max-width:100%;height:auto" role="img">' +
+      g + '</svg><div class="legend" style="flex-direction:column;gap:9px">' + legend + '</div></div>';
+  }
+
+  /* --------------------------------------------------------- 雷达图 */
+  function radar(opt) {
+    const axes = opt.axes || [];
+    const n = Math.max(axes.length, 3);
+    const size = opt.size || 300;
+    const cx = size / 2, cy = size / 2 + 2;
+    const R = size / 2 - 46;
+    const max = opt.max || 100;
+    const pt = (i, v) => {
+      const a = -Math.PI / 2 + (i * Math.PI * 2) / n;
+      const rr = (v / max) * R;
+      return [cx + rr * Math.cos(a), cy + rr * Math.sin(a)];
+    };
+    let g = '';
+
+    [0.25, 0.5, 0.75, 1].forEach(k => {
+      const pts = [];
+      for (let i = 0; i < n; i++) pts.push(pt(i, max * k));
+      g += '<polygon points="' + pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ') +
+        '" fill="none" stroke="var(--grid)"/>';
+    });
+    for (let i = 0; i < n; i++) {
+      const p = pt(i, max);
+      g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) +
+        '" stroke="var(--grid)"/>';
+    }
+
+    if (opt.baseline) {
+      const pts = opt.baseline.map((v, i) => pt(i, v));
+      g += '<polygon points="' + pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ') +
+        '" fill="none" stroke="var(--dim)" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.7"/>';
+    }
+
+    const poly = axes.map((a, i) => pt(i, a.value));
+    g += '<polygon points="' + poly.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ') +
+      '" fill="var(--accent)" fill-opacity="0.18" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
+    poly.forEach(p => { g += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3" fill="var(--accent)"/>'; });
+
+    axes.forEach((a, i) => {
+      const ang = -Math.PI / 2 + (i * Math.PI * 2) / n;
+      const lx = cx + (R + 24) * Math.cos(ang);
+      const ly = cy + (R + 24) * Math.sin(ang);
+      const anchor = Math.abs(Math.cos(ang)) < 0.25 ? 'middle' : (Math.cos(ang) > 0 ? 'start' : 'end');
+      g += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 3).toFixed(1) + '" text-anchor="' + anchor +
+        '" font-size="11" fill="var(--muted)">' + esc(a.label) + '</text>';
+      g += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 17).toFixed(1) + '" text-anchor="' + anchor +
+        '" font-size="10" fill="var(--dim)">' + fmtInt(a.value) + '</text>';
+    });
+
+    return '<svg class="chart" viewBox="0 0 ' + size + ' ' + size + '" style="max-height:330px" ' +
+      'preserveAspectRatio="xMidYMid meet" role="img">' + g + '</svg>';
+  }
+
+  /* --------------------------------------------------------- 堆叠面积图 */
+  function stacked(opt) {
+    const labels = opt.labels || [];
+    const series = opt.series || [];
+    const W = opt.width || 1180;
+    const h = opt.height || 240;
+    const pad = { l: 40, r: 16, t: 16, b: 28 };
+    const n = labels.length;
+    const innerW = W - pad.l - pad.r;
+    const innerH = h - pad.t - pad.b;
+    const totals = labels.map((_, i) => series.reduce((a, s) => a + (s.values[i] || 0), 0));
+    const scale = niceScale(Math.max.apply(null, totals.concat([1])), 3);
+    const yMax = scale.max;
+    const x = i => pad.l + (n <= 1 ? innerW / 2 : (i * innerW) / (n - 1));
+    const y = v => pad.t + innerH - (v / yMax) * innerH;
+    let g = '';
+
+    for (let k = 0; k <= 3; k++) {
+      const vy = pad.t + (innerH * k) / 3;
+      g += '<line x1="' + pad.l + '" y1="' + vy + '" x2="' + (W - pad.r) + '" y2="' + vy + '" stroke="var(--grid)"/>';
+      g += '<text x="' + (pad.l - 8) + '" y="' + (vy + 4) + '" text-anchor="end" font-size="11" fill="var(--dim)">' +
+        fmtInt(yMax - (yMax * k) / 3) + '</text>';
+    }
+
+    const base = labels.map(() => 0);
+    series.forEach((s, si) => {
+      const color = s.color || ['var(--accent)', 'var(--ok)', 'var(--warn)', 'var(--accent2)'][si % 4];
+      const top = labels.map((_, i) => base[i] + (s.values[i] || 0));
+      const up = labels.map((_, i) => x(i) + ',' + y(top[i]).toFixed(1)).join(' ');
+      const down = labels.map((_, i) => x(n - 1 - i) + ',' + y(base[n - 1 - i]).toFixed(1)).join(' ');
+      g += '<polygon points="' + up + ' ' + down + '" fill="' + color + '" opacity="0.5"/>';
+      for (let i = 0; i < n; i++) base[i] = top[i];
+    });
+
+    const step = Math.ceil(n / 9);
+    labels.forEach((lb, i) => {
+      if (i % step !== 0 && i !== n - 1) return;
+      g += '<text x="' + x(i) + '" y="' + (h - 9) + '" text-anchor="middle" font-size="11" fill="var(--dim)">' +
+        esc(lb) + '</text>';
+    });
+
+    return svgWrap(W, h, g);
+  }
+
+  /* --------------------------------------------------------- 柱 + 折线组合 */
+  function combo(opt) {
+    const labels = opt.labels || [];
+    const W = opt.width || 760;
+    const barsS = opt.bars || { values: [] };
+    const lineS = opt.line || { values: [] };
+    const h = opt.height || 230;
+    const pad = { l: 44, r: 44, t: 20, b: 30 };
+    const innerW = W - pad.l - pad.r;
+    const innerH = h - pad.t - pad.b;
+    const band = innerW / Math.max(labels.length, 1);
+    const bw = Math.min(band * 0.52, 40);
+    const s1 = niceScale(Math.max.apply(null, barsS.values.concat([1])) * 1.15, 3);
+    const s2 = niceScale(Math.max.apply(null, lineS.values.concat([1])) * 1.15, 3);
+    const y = v => pad.t + innerH - (v / s1.max) * innerH;
+    const y2 = v => pad.t + innerH - (v / s2.max) * innerH;
+    let g = '';
+
+    for (let k = 0; k <= 3; k++) {
+      const vy = pad.t + (innerH * k) / 3;
+      g += '<line x1="' + pad.l + '" y1="' + vy + '" x2="' + (W - pad.r) + '" y2="' + vy + '" stroke="var(--grid)"/>';
+      g += '<text x="' + (pad.l - 8) + '" y="' + (vy + 4) + '" text-anchor="end" font-size="11" fill="var(--dim)">' +
+        fmtInt(s1.max - (s1.max * k) / 3) + '</text>';
+      g += '<text x="' + (W - pad.r + 8) + '" y="' + (vy + 4) + '" font-size="11" fill="var(--dim)">' +
+        fmtInt(s2.max - (s2.max * k) / 3) + '</text>';
+    }
+
+    labels.forEach((lb, i) => {
+      const cx = pad.l + band * i + band / 2;
+      const v = barsS.values[i] || 0;
+      g += '<rect x="' + (cx - bw / 2) + '" y="' + y(v) + '" width="' + bw + '" height="' +
+        Math.max(2, pad.t + innerH - y(v)) + '" rx="3" fill="var(--accent)" opacity="0.85"/>';
+      g += '<text x="' + cx + '" y="' + (h - 10) + '" text-anchor="middle" font-size="10.5" fill="var(--dim)">' + esc(lb) + '</text>';
+    });
+
+    const pts = labels.map((_, i) => [pad.l + band * i + band / 2, y2(lineS.values[i] || 0)]);
+    g += '<path d="' + pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') +
+      '" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linejoin="round"/>';
+    pts.forEach(p => { g += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.8" fill="var(--ok)"/>'; });
+
+    return svgWrap(W, h, g);
+  }
+
+  /* --------------------------------------------------------- 进度条 */
+  function progress(opt) {
+    const pct = Math.max(0, Math.min(100, opt.value || 0));
+    const tone = opt.tone || 'var(--accent)';
+    return '<div class="bar-row"><div class="bar-top"><span>' + esc(opt.label || '') + '</span><b>' +
+      fmt(pct, 1) + '%</b></div><div class="bar"><i style="--tone:' + tone + ';width:' + pct + '%"></i></div></div>';
+  }
+
+  global.Charts = { line, bars, donut, radar, stacked, combo, progress, fmt, fmtInt, esc, niceScale };
+})(window);
+
+</script>
+  <!-- 平台内核：模块注册 / 数据源注册 / 路由 / 通用渲染器 -->
+  <script>
+/* ============================================================
+   平台内核 Platform
+   ------------------------------------------------------------
+   三件事：
+   1) 数据：优先 fetch data/*.json（便于合作方直接改 JSON），
+      失败则回落到 assets/js/data.js 内联数据（file:// 直接双击打开）
+   2) 注册：registerPage / registerModule / registerDataSource，
+      三方各自开发自己的板块，只需要往平台里注册，不用改别人的代码
+   3) 渲染：统一 UI 组件（hero / kpi / panel / table / badge …）
+   ============================================================ */
+(function (global) {
+  const DATA_FILES = ['manifest', 'overview', 'queue', 'floors', 'nutrition', 'extensions'];
+
+  const Platform = {
+    version: '1.0.0',
+    data: {},
+    pages: [],
+    modules: [],
+    dataSources: {},
+    ui: {},
+    _ready: []
+  };
+
+  /* --------------------------------------------------------- 数据加载 */
+  Platform.load = async function () {
+    const inline = global.__PLATFORM_DATA__ || {};
+    for (const name of DATA_FILES) {
+      let payload = null;
+      // 只有 http(s) 下才去 fetch 外部 JSON；file:// 与 srcdoc 直接用内联数据
+      const canFetch = location.protocol === 'http:' || location.protocol === 'https:';
+      if (canFetch) {
+        try {
+          const res = await fetch('data/' + name + '.json', { cache: 'no-store' });
+          if (res.ok) payload = await res.json();
+        } catch (e) {
+          // http 下取不到就退回内联数据
+        }
+      }
+      if (!payload) payload = inline[name] || null;
+      Platform.data[name] = payload;
+    }
+    Platform.data._inline = JSON.stringify(inline).length > 2;
+    return Platform.data;
+  };
+
+  /* --------------------------------------------------------- 注册接口 */
+  // 新增一个导航页：{ id, label, icon, eyebrow, render(root, ctx) }
+  Platform.registerPage = function (def) {
+    if (!def || !def.id) throw new Error('registerPage 需要 id');
+    Platform.pages.push(def);
+    return def;
+  };
+
+  // 声明一个业务模块（显示在总览的「模块接入状态」里）
+  Platform.registerModule = function (def) {
+    Platform.modules.push(def);
+    return def;
+  };
+
+  // 注册实时数据源：fn() 返回与 JSON 同构的对象，覆盖 mock 数据
+  Platform.registerDataSource = function (key, fn) {
+    Platform.dataSources[key] = fn;
+    return fn;
+  };
+
+  // 应用已注册的实时数据源（页面渲染前调用一次）
+  Platform.applyDataSources = async function () {
+    for (const key of Object.keys(Platform.dataSources)) {
+      try {
+        const out = await Platform.dataSources[key]();
+        if (out) Platform.data[key] = out;
+      } catch (e) {
+        console.warn('[platform] 数据源失败：' + key, e);
+      }
+    }
+  };
+
+  Platform.getPage = function (id) {
+    return Platform.pages.find(p => p.id === id) || null;
+  };
+
+  /* --------------------------------------------------------- 小工具 */
+  const html = (s) => String(s === null || s === undefined ? '' : s);
+
+  Platform.esc = function (s) {
+    return html(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  };
+
+  Platform.num = function (v) {
+    const n = Number(v);
+    if (!isFinite(n)) return html(v);
+    return n.toLocaleString('zh-CN');
+  };
+
+  Platform.toneOf = function (tone) {
+    const map = { ok: 'var(--ok)', warn: 'var(--warn)', danger: 'var(--danger)', accent: 'var(--accent)', flat: 'var(--dim)' };
+    return map[tone] || 'var(--accent)';
+  };
+
+  Platform.badgeClass = function (tone) {
+    const map = { ok: 'tag-ok', warn: 'tag-warn', danger: 'tag-danger', accent: 'tag-info', info: 'tag-info' };
+    return map[tone] || 'tag-muted';
+  };
+
+  /* --------------------------------------------------------- UI 组件 */
+  const ui = Platform.ui;
+
+  // 顶部横幅
+  ui.hero = function (hero) {
+    if (!hero) return '';
+    const stats = (hero.stats || []).map(s =>
+      '<div class="hero-stat"><div class="k">' + Platform.esc(s.label) + '</div>' +
+      '<div class="v">' + Platform.esc(s.value) + '</div>' +
+      '<div class="s">' + Platform.esc(s.sub) + '</div></div>').join('');
+    return '<section class="hero"><div class="hero-main">' +
+      '<span class="hero-eyebrow">' + Platform.esc(hero.eyebrow) + '</span>' +
+      '<h1>' + Platform.esc(hero.title) + '</h1>' +
+      '<p>' + Platform.esc(hero.subtitle) + '</p>' +
+      '</div><div class="hero-stats">' + stats + '</div></section>';
+  };
+
+  // 指标卡
+  ui.kpi = function (k) {
+    const tone = Platform.toneOf(k.tone);
+    const trendIcon = k.trend === 'up' ? 'trend' : k.trend === 'down' ? 'trend' : 'info';
+    return '<div class="kpi" style="--tone:' + tone + '">' +
+      '<div class="kpi-head"><span class="kpi-ico">' + icon(k.icon || 'info', 14) + '</span>' +
+      '<span>' + Platform.esc(k.label) + '</span></div>' +
+      '<div class="kpi-value"><b>' + Platform.esc(k.value) + '</b>' +
+      (k.unit ? '<span>' + Platform.esc(k.unit) + '</span>' : '') + '</div>' +
+      '<div class="kpi-foot">' +
+      (k.delta ? '<span class="chip">' + icon(trendIcon, 11) + Platform.esc(k.delta) + '</span>' : '<span></span>') +
+      '<span class="kpi-src">' + Platform.esc(k.source || '') + '</span>' +
+      '</div></div>';
+  };
+
+  ui.kpis = function (list) {
+    return '<div class="kpis">' + (list || []).map(ui.kpi).join('') + '</div>';
+  };
+
+  // 面板
+  ui.panel = function (opt) {
+    const head = '<div class="panel-head"><div>' +
+      '<div class="panel-title">' + (opt.icon ? icon(opt.icon, 15) : '') + Platform.esc(opt.title || '') + '</div>' +
+      (opt.sub ? '<div class="panel-sub">' + Platform.esc(opt.sub) + '</div>' : '') +
+      '</div>' + (opt.tag ? '<div class="panel-tag">' + Platform.esc(opt.tag) + '</div>' : '') + '</div>';
+    return '<section class="panel ' + (opt.cls || '') + '">' + head + (opt.body || '') + '</section>';
+  };
+
+  // 表格：headers 数组，rows 二维数组（单元格可含 HTML，需自行转义）
+  ui.table = function (headers, rows, opt) {
+    opt = opt || {};
+    const th = headers.map((h, i) => '<th class="' + (opt.numFrom && i >= opt.numFrom ? 'num' : '') + '">' + Platform.esc(h) + '</th>').join('');
+    const tr = rows.map(r => '<tr>' + r.map((c, i) =>
+      '<td class="' + (opt.numFrom && i >= opt.numFrom ? 'num' : '') + '">' + (opt.raw ? c : Platform.esc(c)) + '</td>').join('') + '</tr>').join('');
+    return '<table class="table"><thead><tr>' + th + '</tr></thead><tbody>' + tr + '</tbody></table>';
+  };
+
+  ui.badge = function (text, tone) {
+    return '<span class="badge ' + Platform.badgeClass(tone) + '">' + Platform.esc(text) + '</span>';
+  };
+
+  ui.alert = function (text, opt) {
+    opt = opt || {};
+    const tone = opt.tone || (opt.ok ? 'ok' : 'danger');
+    const ico = tone === 'ok' ? 'check' : tone === 'info' ? 'info' : 'alert';
+    return '<div class="alert ' + tone + '">' + icon(ico, 16) +
+      '<div>' + Platform.esc(text) + '</div></div>';
+  };
+
+  ui.barRow = function (label, pct, tone) {
+    return Charts.progress({ label: label, value: pct, tone: Platform.toneOf(tone) });
+  };
+
+  const LEVEL_LABEL = { info: '提示', warn: '警告', warning: '警告', error: '严重', critical: '严重', ok: '正常' };
+
+  ui.timeline = function (items) {
+    const rows = (items || []).map(it => {
+      const raw = String(it.level || 'info').toLowerCase();
+      const emo = (raw === 'warn' || raw === 'warning' || raw === 'error' || raw === 'critical' || it.level === '警告' || it.level === '严重');
+      const tone = emo ? 'danger' : 'accent';
+      const text = LEVEL_LABEL[raw] || it.level;
+      return '<div class="tl-item"><span class="tl-time">' + Platform.esc(it.time) + '</span>' +
+        ui.badge(text, tone) +
+        '<span class="tl-text">' + Platform.esc(it.text) + '</span></div>';
+    }).join('');
+    return '<div class="timeline">' + rows + '</div>';
+  };
+
+  ui.moduleRow = function (m) {
+    const tone = m.status === 'running' ? 'ok' : m.status === 'mock' ? 'accent' : 'warn';
+    const label = m.status === 'running' ? '运行中' : m.status === 'mock' ? '模拟数据' : '待接入';
+    return '<div class="module"><span class="m-ico">' + icon(m.icon || 'plug', 14) + '</span>' +
+      '<div class="m-body"><div class="m-name">' + Platform.esc(m.name) + '</div>' +
+      '<div class="m-detail">' + Platform.esc(m.owner || '') + ' · ' + Platform.esc(m.detail || '') + '</div></div>' +
+      ui.badge(label, tone) + '</div>';
+  };
+
+  ui.cameras = function (list) {
+    const cards = (list || []).map(c => {
+      const online = c.status === 'online' || c.status === '在线';
+      return '<div class="cam"><div class="cam-top"><span>' + Platform.esc(c.id) + '</span>' +
+        ui.badge(online ? '在线' : '离线', online ? 'ok' : 'danger') + '</div>' +
+        '<div class="cam-name">' + Platform.esc(c.name) + '</div>' +
+        '<div class="cam-meta">' + Platform.esc(c.floor) + ' · ' + Platform.esc(c.resolution || '') +
+        (c.fps ? ' · ' + c.fps + ' fps' : '') + '</div></div>';
+    }).join('');
+    return '<div class="cams">' + cards + '</div>';
+  };
+
+  ui.legend = function (items) {
+    const parts = (items || []).map(i => '<span><i style="background:' + (i.color || Platform.toneOf(i.tone)) + '"></i>' +
+      Platform.esc(i.name || i.label) + '</span>').join('');
+    return '<div class="legend">' + parts + '</div>';
+  };
+
+  /* --------------------------------------------------------- 路由 */
+  Platform.currentId = null;
+  Platform.onNavigate = null;   // 由 app.js 注入
+
+  // 纯内存路由：不写 location.hash / history，避免在 srcdoc 等受限容器里被浏览器拦截
+  Platform.navigate = function (id, push) {
+    if (!id || !Platform.getPage(id)) return;
+    Platform.currentId = id;
+    if (Platform.onNavigate) Platform.onNavigate(id);
+  };
+
+  /* --------------------------------------------------------- 启动 */
+  Platform.boot = async function (opts) {
+    await Platform.load();
+    await Platform.applyDataSources();
+    // 通用模块页（data/extensions.json 声明即可，零代码）
+    if (typeof Platform.buildGenericPages === 'function') Platform.buildGenericPages();
+    const hash = (location.hash || '').replace(/^#\/?/, '');
+    const nav = (Platform.data.manifest && Platform.data.manifest.nav) || [];
+    const first = nav.length ? nav[0].id : (Platform.pages[0] && Platform.pages[0].id);
+    // 若以 #/xxx 打开则直接进该页，其余情况进第一页；全过程不碰浏览历史
+    if (hash && Platform.getPage(hash)) {
+      Platform.navigate(hash, false);
+    } else {
+      Platform.navigate(first, false);
+    }
+
+    // 主题（localStorage 在沙箱里可能不可用，取不到就用默认深色）
+    try {
+      const saved = global.localStorage && global.localStorage.getItem('canteen-theme');
+      if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+    } catch (e) { /* 忽略：受限容器里没有存储权限 */ }
+
+    Platform._ready.forEach(fn => fn(Platform));
+    if (opts && opts.onReady) opts.onReady(Platform);
+  };
+
+  Platform.ready = function (fn) { Platform._ready.push(fn); };
+
+  global.Platform = Platform;
+})(window);
+
+</script>
+  <!-- 五个页面 -->
+  <script>
+/* ============================================================
+   五个页面
+   ------------------------------------------------------------
+   每个页面都是「一个 render 函数 + 可选 mount（绑定交互）」，
+   想加新板块的人只要照抄一个 registerPage，不用碰别人代码。
+   ============================================================ */
+(function (global) {
+  const P = global.Platform;
+  const ui = P.ui;
+  const C = global.Charts;
+  const esc = P.esc;
+
+  const PALETTE = ['var(--accent)', 'var(--ok)', 'var(--warn)', 'var(--accent2)', 'var(--danger)', '#a78bfa'];
+
+  /* ======================================================= 1. 系统总览 */
+  P.registerPage({
+    id: 'overview',
+    label: '系统总览',
+    icon: 'grid',
+    render: function (ctx) {
+      const d = ctx.data.overview || {};
+      const hourly = d.hourly || { categories: [], values: [] };
+      const peak = hourly.values.indexOf(Math.max.apply(null, hourly.values || [0]));
+
+      const hero = ui.hero(d.hero);
+      const kpis = ui.kpis(d.kpis);
+
+      const hourlyPanel = ui.panel({
+        title: '今日就餐人次分布', sub: '按小时统计的进出场人流，用于预判拥堵时段', tag: 'TODAY / HOURLY', icon: 'trend',
+        body: C.line({
+          labels: hourly.categories, height: 250, width: 620,
+          series: [{ name: '就餐人次', values: hourly.values, color: 'var(--accent)' }],
+          markers: peak >= 0 ? [{ index: peak, value: hourly.values[peak], label: '峰值 ' + hourly.values[peak] }] : []
+        }) + ui.legend([{ name: '就餐人次', color: 'var(--accent)' }, { name: '午高峰', color: 'var(--warn)' }])
+      });
+
+      const modulesPanel = ui.panel({
+        title: '模块接入状态', sub: '三个业务板块与基础服务的连通情况', tag: 'MODULES', icon: 'plug',
+        body: '<div class="modules">' + (d.modules || []).map(ui.moduleRow).join('') + '</div>'
+      });
+
+      const fl = (ctx.data.floors && ctx.data.floors.floors) || [];
+      const seatTotal = fl.reduce((a, b) => a + b.seats, 0);
+      const seatUsed = fl.reduce((a, b) => a + b.occupied, 0);
+
+      const floorBars = (d.floors || []).map(f => {
+        const tone = f.usage >= 80 ? 'danger' : f.usage >= 65 ? 'warn' : 'accent';
+        return ui.barRow(f.name + ' · 座位占用', f.usage, tone);
+      }).join('');
+
+      const floorsPanel = ui.panel({
+        title: '楼层承载', sub: '实时座位占用', tag: 'FLOORS', icon: 'layers',
+        body: floorBars +
+          '<div class="panel-sub" style="margin-top:10px">座位合计 ' + C.fmtInt(seatTotal) + ' · 在座 ' + C.fmtInt(seatUsed) +
+          ' · 空余 ' + C.fmtInt(seatTotal - seatUsed) + '<br>占用超过 80% 时建议分流，等待时间会明显上升</div>'
+      });
+
+      const alertsPanel = ui.panel({
+        title: '实时告警', sub: '按时间倒序，红色为需要立即处理', tag: 'ALERTS', icon: 'bell',
+        body: ui.timeline(d.alerts)
+      });
+
+      const resPanel = ui.panel({
+        title: '系统资源', sub: '采集自本地数据中台', tag: 'SYSTEM', icon: 'cpu',
+        body: (d.resources || []).map(r =>
+          ui.barRow(r.name, r.value, r.value >= 95 ? 'ok' : r.value >= 65 ? 'warn' : 'danger')).join('')
+      });
+
+      const notice = ui.alert(
+        '集成说明：三个板块目前均由 data/*.json 提供演示数据。合作方接入真实硬件 / 算法后，' +
+        '只需把结果写进对应 JSON（或注册一个数据源函数），本页所有指标、图表、告警会自动更新。',
+        { tone: 'ok' });
+
+      return hero + kpis +
+        '<div class="grid-2">' + hourlyPanel + modulesPanel + '</div>' +
+        '<div class="grid-3">' + floorsPanel + alertsPanel + resPanel + '</div>' +
+        notice;
+    }
+  });
+
+  /* ======================================================= 2. 排队拥堵监控 */
+  P.registerPage({
+    id: 'queue',
+    label: '排队拥堵监控',
+    icon: 'users',
+    render: function (ctx) {
+      const d = ctx.data.queue || {};
+      const threshold = d.threshold || 20;
+
+      const barsPanel = ui.panel({
+        title: '各窗口排队人数', sub: '柱高为当前排队人数，红色虚线为拥挤阈值', tag: 'WINDOW / NOW', icon: 'trend',
+        body: C.bars({
+          width: 620,
+          items: (d.windows || []).map(w => ({
+            label: w.name.split('·')[0].trim(),
+            value: w.people,
+            tone: w.level === '拥挤' ? 'var(--danger)' : w.level === '一般' ? 'var(--warn)' : 'var(--ok)'
+          })),
+          threshold: { value: threshold, label: '拥挤阈值 ' + threshold + ' 人' },
+          height: 300
+        })
+      });
+
+      const rows = (d.windows || []).map(w => {
+        const tone = w.level === '拥挤' ? 'danger' : w.level === '一般' ? 'warn' : 'ok';
+        return [w.name, w.floor, w.people + ' 人', w.wait, ui.badge(w.level, tone)];
+      });
+      const tablePanel = ui.panel({
+        title: '窗口实时明细', sub: '数据来自 data/queue.json 的最新快照', tag: 'SNAPSHOT', icon: 'database',
+        body: ui.table(['窗口', '楼层', '排队', '预计等待', '拥挤度'], rows, { numFrom: 2, raw: true })
+      });
+
+      const trend = d.trend || { categories: [], series: [] };
+      const trendPanel = ui.panel({
+        title: '近 3 小时排队趋势', sub: '每 10 分钟一个采样点，可看出拥堵是否回落', tag: 'TREND / 3H', icon: 'trend',
+        body: C.line({
+          labels: trend.categories, height: 230, width: 1180,
+          series: trend.series.map((s, i) => ({ name: s.name, values: s.values, color: PALETTE[i % PALETTE.length], area: false })),
+          threshold: { value: threshold, label: '阈值 ' + threshold }
+        }) + ui.legend(trend.series.map((s, i) => ({ name: s.name, color: PALETTE[i % PALETTE.length] })))
+      });
+
+      const camsPanel = ui.panel({
+        title: '摄像头阵列', sub: '在线设备实时预览占位，第二阶段由 YOLO 服务推送检测流', tag: 'CAMERA GRID', icon: 'camera',
+        body: ui.cameras(d.cameras)
+      });
+
+      const notice = ui.alert(
+        '接口说明：本页只读 data/queue.json。CV 组把「窗口 → 排队人数」写进这个文件（或用 registerDataSource("queue", fn) 推送），' +
+        '柱状图、明细表、告警条会同时刷新，前端不需要改一行代码。', { tone: 'info' });
+
+      const toolbar = '<div class="field" style="align-items:center">' +
+        '<button class="btn ghost" data-action="refresh">' + icon('refresh', 14) + ' 刷新监控数据</button>' +
+        '<span class="kpi-src">最近一次快照：' + esc((d.hero && d.hero.stats && d.hero.stats[2] ? d.hero.stats[2].value : '--')) + '</span></div>';
+
+      return ui.hero(d.hero) +
+        (d.alert ? ui.alert(d.alert) : '') +
+        ui.kpis(d.kpis) +
+        '<div class="grid-2">' + barsPanel + tablePanel + '</div>' +
+        trendPanel + camsPanel + notice + toolbar;
+    },
+    mount: function (root, ctx) {
+      const btn = root.querySelector('[data-action="refresh"]');
+      if (btn) btn.addEventListener('click', () => {
+        ctx.toast('演示模式：真实接入后这里会重新拉取摄像头检测结果');
+        ctx.rerender();
+      });
+    }
+  });
+
+  /* ======================================================= 3. 楼层分流建议 */
+  P.registerPage({
+    id: 'floors',
+    label: '楼层分流建议',
+    icon: 'layers',
+    render: function (ctx) {
+      const d = ctx.data.floors || {};
+      const adv = d.advice || {};
+
+      const advice = '<section class="advice">' +
+        '<div class="a-eyebrow">' + icon('target', 12) + ' AI 分流建议 · 实时计算</div>' +
+        '<h2>' + esc(adv.title || '') + '</h2>' +
+        '<p>' + esc(adv.reason || '') + '</p>' +
+        '<div class="a-badges">' + (adv.badges || []).map(b => ui.badge(b, 'ok')).join('') + '</div>' +
+        '</section>';
+
+      const share = d.share || [];
+      const donutPanel = ui.panel({
+        title: '各楼层就餐人数占比', sub: '按最后一次楼层快照统计', tag: 'SHARE', icon: 'pie',
+        body: C.donut({
+          items: share.map((s, i) => ({ label: s.name, value: s.value, color: PALETTE[i % PALETTE.length] })),
+          centerValue: C.fmtInt(share.reduce((a, b) => a + b.value, 0)),
+          centerLabel: '在餐总人数', size: 250
+        })
+      });
+
+      const rows = (d.floors || []).map(f => [
+        f.name, f.seats + ' 座', f.occupied, ui.badge(f.usage.toFixed(1) + '%', f.usage >= 80 ? 'danger' : f.usage >= 65 ? 'warn' : 'ok'), f.wait
+      ]);
+      const statePanel = ui.panel({
+        title: '楼层实时状态', sub: '座位使用率 = 在座人数 ÷ 座位数', tag: 'FLOOR STATUS', icon: 'seat',
+        body: ui.table(['楼层', '座位数', '在座', '使用率', '等待'], rows, { numFrom: 1, raw: true }) +
+          '<div style="margin-top:8px">' + (d.floors || []).map(f =>
+            ui.barRow(f.name, f.usage, f.usage >= 80 ? 'danger' : f.usage >= 65 ? 'warn' : 'accent')).join('') + '</div>'
+      });
+
+      const flow = d.flow || { categories: [], series: [] };
+      const flowPanel = ui.panel({
+        title: '三层人流分布（今日）', sub: '堆叠面积图展示各楼层分时就餐人数', tag: 'FLOW / TODAY', icon: 'layers',
+        body: C.stacked({
+          labels: flow.categories, height: 230, width: 1180,
+          series: flow.series.map((s, i) => ({ name: s.name, values: s.values, color: PALETTE[i % PALETTE.length] }))
+        }) + ui.legend(flow.series.map((s, i) => ({ name: s.name, color: PALETTE[i % PALETTE.length] })))
+      });
+
+      const notice = ui.alert(
+        '接口说明：硬件组把多路摄像头的窗口级结果汇总成「楼层 → 在座 / 座位」写进 data/floors.json，' +
+        '建议卡、环形图、状态表会按同一份数据重算，推荐算法也可以换成你们自己的实现。', { tone: 'info' });
+
+      return ui.hero(d.hero) + advice + ui.kpis(d.kpis) +
+        '<div class="grid-2">' + donutPanel + statePanel + '</div>' +
+        flowPanel + notice;
+    }
+  });
+
+  /* ======================================================= 4. 营养健康分析 */
+  P.registerPage({
+    id: 'nutrition',
+    label: '营养健康分析',
+    icon: 'leaf',
+    render: function (ctx) {
+      const all = (ctx.data.nutrition && ctx.data.nutrition.students) || [];
+      if (!all.length) return ui.hero(null) + '<div class="empty">暂无营养数据</div>';
+
+      const idx = Math.min(P.state.studentIndex || 0, all.length - 1);
+      const s = all[idx];
+
+      const hero = ui.hero({
+        eyebrow: 'CONTROL CENTER / NUTRITION',
+        title: '营养健康分析',
+        subtitle: '读取学生餐卡点餐记录，生成六维营养雷达图与家长周报',
+        stats: [
+          { label: 'STUDENT', value: s.name, sub: s.class_name },
+          { label: 'WEEK', value: s.week, sub: '统计周期' },
+          { label: 'SCORE', value: s.kpis[3] ? s.kpis[3].value : '--', sub: '综合营养得分' }
+        ]
+      });
+
+      const picker = '<div class="field">' +
+        '<label for="stu">' + icon('user', 13) + ' 选择学生（按学号查询餐卡记录）</label>' +
+        '<select id="stu">' + all.map((x, i) =>
+          '<option value="' + i + '"' + (i === idx ? ' selected' : '') + '>' + esc(x.label) + '</option>').join('') +
+        '</select>' +
+        '<span class="kpi-src">卡号 ' + esc(s.card_no) + ' · 学号 ' + esc(s.id) + '</span></div>';
+
+      const radar = s.radar || { axes: [], actual: [] };
+      const radarPanel = ui.panel({
+        title: '本周营养摄入雷达图', sub: '虚线为推荐标准，实线为本周实际摄入', tag: 'RADAR / WEEK', icon: 'target',
+        body: C.radar({
+          axes: radar.axes.map((name, i) => ({ label: name, value: radar.actual[i] })),
+          baseline: radar.standard || radar.axes.map(() => 100),
+          max: 100, size: 300
+        })
+      });
+
+      const t = s.trend || { categories: [], kcal: [], protein: [] };
+      const trendPanel = ui.panel({
+        title: '每日热量与蛋白质趋势', sub: '柱为热量，线为蛋白质（已放大 10 倍便于同图比较）', tag: 'TREND / 8D', icon: 'trend',
+        body: C.combo({ labels: t.categories, bars: { values: t.kcal }, line: { values: t.protein }, height: 230, width: 620 }) +
+          ui.legend([{ name: '热量 kcal', color: 'var(--accent)' }, { name: '蛋白质 ×10 g', color: 'var(--ok)' }])
+      });
+
+      const meals = s.meals || [];
+      const mealPanel = ui.panel({
+        title: '餐次热量构成', sub: '早 / 中 / 晚三餐占比', tag: 'MEAL MIX', icon: 'pie',
+        body: C.donut({
+          items: meals.map((m, i) => ({ label: m.name, value: m.value, color: PALETTE[i % PALETTE.length] })),
+          centerValue: meals.length + ' 餐', centerLabel: '餐次构成', size: 210
+        })
+      });
+
+      const advicePanel = ui.panel({
+        title: '营养师建议', sub: '按六维得分自动生成', tag: 'ADVICE', icon: 'shield',
+        body: (s.advice || []).map(a =>
+          '<div style="padding:8px 0;border-bottom:1px dashed var(--line)">' +
+          '<div style="font-size:13px;color:var(--warn)">' + esc(a.name) + ' · ' + C.fmt(a.score, 1) + ' 分</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + esc(a.tip) + '</div></div>').join('')
+      });
+
+      const recPanel = ui.panel({
+        title: '最近点餐记录', sub: '来自餐卡消费流水', tag: 'RECORDS', icon: 'database',
+        body: ui.table(['时间', '餐次', '菜品', '热量', '金额'],
+          (s.records || []).map(r => [r.time, r.meal, r.dish, r.kcal + ' kcal', r.amount]), { numFrom: 3 })
+      });
+
+      const pushPanel = ui.panel({
+        title: '家长周报推送', sub: '推送到微信服务号（当前为模拟发送）', tag: 'PUSH', icon: 'send',
+        body: '<div class="field">' +
+          '<button class="btn primary" data-action="push">' + icon('send', 14) + ' 生成并推送家长微信</button>' +
+          '<span class="kpi-src">将生成《' + esc(s.class_name) + ' ' + esc(s.name) + ' · ' + esc(s.week) + ' 营养周报》</span></div>' +
+          '<div id="push-result"></div>' +
+          '<div style="margin-top:10px;font-size:11.5px;color:var(--dim)">历史推送：' +
+          ((s.pushes || []).map(p => esc(p.day) + ' · ' + esc(p.channel) + ' · ' + esc(p.status)).join('　|　') || '暂无') +
+          '</div>'
+      });
+
+      const notice = ui.alert(
+        '接口说明：数据组把每人每日的餐卡明细写进 data/nutrition.json，前端负责聚合与可视化。' +
+        '真实推送由后端的微信服务号 / 企业机器人完成，页面只保留按钮与结果位。', { tone: 'info' });
+
+      return hero + picker + ui.kpis(s.kpis) +
+        '<div class="grid-2">' + radarPanel + trendPanel + '</div>' +
+        '<div class="grid-3">' + mealPanel + advicePanel + pushPanel + '</div>' +
+        recPanel + notice;
+    },
+    mount: function (root, ctx) {
+      const sel = root.querySelector('#stu');
+      if (sel) sel.addEventListener('change', () => {
+        P.state.studentIndex = Number(sel.value);
+        ctx.rerender();
+      });
+      const btn = root.querySelector('[data-action="push"]');
+      if (btn) btn.addEventListener('click', () => {
+        const all = ctx.data.nutrition.students;
+        const s = all[Math.min(P.state.studentIndex || 0, all.length - 1)];
+        const box = root.querySelector('#push-result');
+        if (box) {
+          box.style.marginTop = '12px';
+          box.innerHTML = ui.alert('已为「' + s.class_name + ' · ' + s.name + '」生成 ' + s.week +
+            ' 营养周报，并推送到家长微信（模拟，不会真的发送）', { ok: true });
+        }
+        ctx.toast('周报已生成（模拟推送）');
+      });
+    }
+  });
+
+  /* ======================================================= 5. 扩展与接入 */
+  P.registerPage({
+    id: 'extensions',
+    label: '扩展与接入',
+    icon: 'plug',
+    render: function (ctx) {
+      const d = ctx.data.extensions || {};
+      const intro = d.intro || {};
+
+      const hero = ui.hero({
+        eyebrow: 'CONTROL CENTER / EXTEND',
+        title: intro.title || '扩展与接入',
+        subtitle: intro.subtitle || '',
+        stats: [
+          { label: 'PAGES', value: P.pages.length + ' 个', sub: '已注册导航页' },
+          { label: 'SLOTS', value: (d.slots || []).length + ' 个', sub: '模块槽位' },
+          { label: 'CONTRACT', value: 'JSON', sub: '对接方式' }
+        ]
+      });
+
+      const slots = (d.slots || []).map(s => {
+        const filled = s.status !== '空槽位';
+        return '<div class="slot ' + (filled ? 'filled' : '') + '">' +
+          '<div class="slot-name">' + esc(s.name) +
+          ui.badge(filled ? s.status : '空槽位', filled ? 'accent' : 'muted') + '</div>' +
+          '<div class="slot-hint">' + esc(s.hint) + '</div>' +
+          '<div class="slot-meta">' + esc(s.type) + ' · 负责人：' + esc(s.owner) + '</div></div>';
+      }).join('');
+
+      const contract = (d.contract || []).map(c =>
+        '<div class="panel">' +
+        '<div class="panel-head"><div><div class="panel-title">' + icon('code', 15) + esc(c.title) + '</div></div></div>' +
+        '<div class="code">' + c.lines.map(esc).join('\n') + '</div></div>').join('');
+
+      const g = d.genericDemo || {};
+      const demo = ui.panel({
+        title: g.name || '通用模块示例',
+        sub: '这段是通用渲染器跑出来的，只靠 JSON 配置，没有写任何页面代码',
+        tag: 'GENERIC / ZERO-CODE', icon: 'plus',
+        body: ui.kpis(g.kpis || []) +
+          '<div class="panel-sub" style="margin-top:10px">' + esc(g.note || '') + '</div>'
+      });
+
+      const sample = '<div class="panel"><div class="panel-head"><div><div class="panel-title">' +
+        icon('link', 15) + '两行代码接入（示例）</div></div></div>' +
+        '<div class="code">' +
+        esc('// 1) 数据源：把你的算法结果直接推给平台\n') +
+        esc("Platform.registerDataSource('queue', async () => ({\n") +
+        esc('  windows: [...], trend: { categories: [...], series: [...] }\n') +
+        esc('}));\n\n') +
+        esc('// 2) 新分项目：注册一个自己的导航页\n') +
+        esc("Platform.registerPage({\n  id: 'dish-waste', label: '剩菜监测', icon: 'leaf',\n") +
+        esc('  render: (ctx) => \'<div class="panel">...我的板块...</div>\'\n});') +
+        '</div></div>';
+
+      return hero +
+        ui.panel({ title: '模块槽位', sub: '三个分目标各占一个槽位，另外两个空槽位留给后续新分项目', tag: 'SLOTS', icon: 'grid', body: '<div class="slot-grid">' + slots + '</div>' }) +
+        demo +
+        '<div class="grid-3">' + contract + '</div>' +
+        '<div class="grid-2">' + sample +
+        ui.panel({
+          title: '扩展规则（给合作方）', sub: '三条约定，保证各干各的也能拼起来', tag: 'RULES', icon: 'shield',
+          body: '<div style="font-size:12.5px;color:var(--muted);line-height:2">' +
+            '① 只改自己的文件：data/&lt;模块&gt;.json 或 assets/js/modules/&lt;模块&gt;.js，不要动别人的页面<br>' +
+            '② 数据结构对齐 docs/INTERFACE.md 里的字段表，字段名不要自创<br>' +
+            '③ 时间统一用 <b style="color:var(--text)">YYYY-MM-DD HH:MM</b>，数值统一为数字类型（不要写 "23 人"）<br>' +
+            '④ 新增页面必须 registerPage 注册，否则导航里不会出现' +
+            '</div>'
+        }) + '</div>';
+    }
+  });
+
+  /* ============================================== 通用模块页（零代码扩展） */
+  // 当 data/extensions.json 里出现通用模块时，自动生成页面，无需写代码
+  P.buildGenericPages = function () {
+    const ext = P.data.extensions || {};
+    (ext.slots || []).forEach(function (slot) {
+      if (slot.status !== '空槽位' || P.getPage(slot.id)) return;
+      const g = ext.genericDemo || {};
+      P.registerPage({
+        id: slot.id,
+        label: slot.name,
+        icon: 'plus',
+        generic: true,
+        render: function () {
+          return ui.hero({
+            eyebrow: 'CONTROL CENTER / ' + String(slot.id).toUpperCase(),
+            title: slot.name,
+            subtitle: slot.hint || '等待认领：在 data/extensions.json 里填入配置即可上线',
+            stats: [
+              { label: 'STATUS', value: slot.status, sub: slot.type },
+              { label: 'OWNER', value: slot.owner, sub: '负责人' },
+              { label: 'DATA', value: 'JSON', sub: '对接方式' }
+            ]
+          }) +
+            ui.panel({
+              title: '占位内容（示例数据）', sub: '把下面的结构换成你的真实数据即可',
+              tag: 'PLACEHOLDER', icon: 'plus',
+              body: ui.kpis(g.kpis || []) +
+                '<div class="panel-sub" style="margin-top:10px">' + esc(g.note || '') + '</div>'
+            }) +
+            ui.alert('这个页面是通用渲染器自动生成的：在 data/extensions.json 里把该槽位的 status 改成「已接入」并补充字段，就能显示真实内容。');
+        }
+      });
+    });
+  };
+})(window);
+
+</script>
+  <!-- 启动 -->
+  <script>
+/* ============================================================
+   启动 & 外壳（侧边栏 / 顶栏 / 路由）
+   ============================================================ */
+(function (global) {
+  const P = global.Platform;
+  const ui = P.ui;
+  const esc = P.esc;
+
+  P.state = { studentIndex: 0 };
+
+  const els = {
+    sidebar: document.getElementById('sidebar'),
+    topbar: document.getElementById('topbar'),
+    view: document.getElementById('view'),
+    foot: document.getElementById('foot'),
+    toast: document.getElementById('toast')
+  };
+
+  let toastTimer = null;
+  function toast(msg) {
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2600);
+  }
+
+  /* ------------------------------------------------------- 导航顺序 */
+  function navItems() {
+    const order = (P.data.manifest && P.data.manifest.nav) || [];
+    const map = {};
+    P.pages.forEach(p => { map[p.id] = p; });
+    const items = [];
+    order.forEach(o => { if (map[o.id]) { items.push(map[o.id]); delete map[o.id]; } });
+    Object.keys(map).forEach(k => items.push(map[k]));
+    return items;
+  }
+
+  /* ------------------------------------------------------- 侧边栏 */
+  function renderSidebar(activeId) {
+    const m = (P.data.manifest && P.data.manifest.brand) || {};
+    const nav = navItems().map(p =>
+      '<a class="nav-item' + (p.id === activeId ? ' active' : '') + '" href="#/' + p.id + '" data-id="' + p.id + '">' +
+      icon(p.icon || 'grid', 16) + '<span>' + esc(p.label) + '</span></a>').join('');
+
+    const mods = ((P.data.manifest && P.data.manifest.modules) || []).map(mod => {
+      const tone = mod.status === 'running' ? 'ok' : mod.status === 'mock' ? 'accent' : 'warn';
+      const text = mod.status === 'running' ? '运行中' : mod.status === 'mock' ? '模拟数据' : '待接入';
+      return '<div class="status-row"><span>' + esc(mod.name) + '</span><b style="color:' +
+        P.toneOf(tone) + '">' + text + '</b></div>';
+    }).join('');
+
+    els.sidebar.innerHTML =
+      '<div class="brand"><div class="brand-mark">' + icon('grid', 20) + '</div>' +
+      '<div><div class="brand-t">' + esc(m.title || '智慧食堂') + '</div>' +
+      '<div class="brand-s">' + esc(m.subtitle || 'CONTROL CENTER') + '</div></div></div>' +
+      '<div class="side-label">主导航 · NAVIGATION</div>' +
+      '<nav class="nav">' + nav + '</nav>' +
+      '<div class="side-label">系统状态 · STATUS</div>' +
+      '<div class="status-list">' + mods + '</div>' +
+      '<div class="side-foot">v' + esc(P.version) + ' · 静态演示版<br>数据源：data/*.json<br>' +
+      '三个分模块接口已预留</div>';
+  }
+
+  /* ------------------------------------------------------- 顶栏 */
+  function renderTopbar(page) {
+    els.topbar.innerHTML =
+      '<div class="crumb">控制中心 / <b>' + esc(page ? page.label : '') + '</b></div>' +
+      '<div class="spacer"></div>' +
+      '<span class="pill"><span class="dot"></span>系统运行中</span>' +
+      '<button class="icon-btn" id="btn-theme" title="切换深色 / 浅色">' + icon('sun', 14) + '<span>主题</span></button>' +
+      '<button class="icon-btn" id="btn-refresh" title="重新读取数据">' + icon('refresh', 14) + '<span>刷新</span></button>';
+
+    els.topbar.querySelector('#btn-theme').addEventListener('click', () => {
+      const cur = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = cur;
+      try { localStorage.setItem('canteen-theme', cur); } catch (err) { /* 沙箱里忽略 */ }
+      toast(cur === 'light' ? '已切换到浅色主题' : '已切换到深色主题');
+    });
+
+    els.topbar.querySelector('#btn-refresh').addEventListener('click', async () => {
+      await P.load();
+      renderPage(P.currentId || 'overview');
+      toast('已重新读取 data/*.json');
+    });
+  }
+
+  function allPages() {
+    return navItems();
+  }
+
+  /* ------------------------------------------------------- 页脚 */
+  function renderFoot() {
+    const m = P.data.manifest || {};
+    els.foot.innerHTML =
+      '<span>演示数据 · 纯静态页面（' + (P.data._inline ? '内联数据' : 'data/*.json') + '），无需后端与安装</span>' +
+      '<span>最近更新：' + esc(m.updated || '--') + ' · 平台 v' + esc(P.version) + '</span>';
+  }
+
+  /* ------------------------------------------------------- 路由渲染 */
+  function renderPage(id) {
+    const page = P.getPage(id) || P.pages[0];
+    if (!page) {
+      els.view.innerHTML = '<div class="empty">还没有注册任何页面</div>';
+      return;
+    }
+    const ctx = {
+      data: P.data,
+      page: page,
+      toast: toast,
+      rerender: () => renderPage(page.id)
+    };
+    try {
+      els.view.innerHTML = page.render(ctx) || '';
+      if (page.mount) page.mount(els.view, ctx);
+    } catch (err) {
+      console.error(err);
+      els.view.innerHTML = ui.alert('页面渲染出错：' + err.message);
+    }
+    renderSidebar(page.id);
+    renderTopbar(page);
+    renderFoot();
+    document.title = page.label + ' · 人大附中智慧食堂综合调度中心';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  P.onNavigate = function (id) {
+    P.currentId = id;
+    renderPage(id);
+  };
+
+  // 导航点击：一律拦掉默认跳转，改用内存路由（在 srcdoc / 沙箱 iframe 里也不会报错）
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('.nav-item');
+    if (!a) return;
+    e.preventDefault();
+    const id = a.dataset.id;
+    if (id && id !== P.currentId) P.navigate(id);
+  });
+
+  /* ------------------------------------------------------- 启动 */
+  async function start() {
+    // boot 内部完成：加载数据 → 应用数据源 → 注册通用模块 → 按 hash 渲染首屏
+    await P.boot({});
+  }
+
+  start().catch(err => {
+    console.error(err);
+    els.view.innerHTML = '<div class="empty">启动失败：' + esc(err.message) + '</div>';
+  });
+})(window);
+
+</script>
+</body>
+</html>

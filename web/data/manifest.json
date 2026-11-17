@@ -1,0 +1,99 @@
+{
+  "version": "1.0.0",
+  "phase": "第一阶段 · 演示版",
+  "brand": {
+    "title": "智慧食堂",
+    "subtitle": "CONTROL CENTER",
+    "school": "人大附中"
+  },
+  "nav": [
+    {
+      "id": "overview",
+      "label": "系统总览",
+      "icon": "grid"
+    },
+    {
+      "id": "queue",
+      "label": "排队拥堵监控",
+      "icon": "queue"
+    },
+    {
+      "id": "floors",
+      "label": "楼层分流建议",
+      "icon": "layers"
+    },
+    {
+      "id": "nutrition",
+      "label": "营养健康分析",
+      "icon": "nutrition"
+    },
+    {
+      "id": "extensions",
+      "label": "扩展与接入",
+      "icon": "puzzle"
+    }
+  ],
+  "modules": [
+    {
+      "id": "queue",
+      "name": "排队拥堵监控",
+      "owner": "CV 组",
+      "status": "planned",
+      "dataFile": "data/queue.json",
+      "schema": "docs/INTERFACE.md#排队模块-queuejson",
+      "hint": "检测各窗口排队人数，写 window.people / wait"
+    },
+    {
+      "id": "floors",
+      "name": "楼层分流建议",
+      "owner": "硬件组",
+      "status": "planned",
+      "dataFile": "data/floors.json",
+      "schema": "docs/INTERFACE.md#楼层模块-floorsjson",
+      "hint": "汇总多路摄像头 → 楼层人流与座位占用"
+    },
+    {
+      "id": "nutrition",
+      "name": "营养健康分析",
+      "owner": "数据组",
+      "status": "mock",
+      "dataFile": "data/nutrition.json",
+      "schema": "docs/INTERFACE.md#营养模块-nutritionjson",
+      "hint": "餐卡点餐流水 → 六维营养得分与周报"
+    }
+  ],
+  "extensionSlots": [
+    {
+      "id": "ext-slot-1",
+      "name": "新分项目 A（预留）",
+      "status": "empty",
+      "hint": "在 data/extensions.json 里追加一条配置即可上线一个空白模块页"
+    },
+    {
+      "id": "ext-slot-2",
+      "name": "新分项目 B（预留）",
+      "status": "empty",
+      "hint": "支持 KPI / 折线 / 柱状 / 环形 / 表格 五种通用卡片，无需改前端代码"
+    }
+  ],
+  "thresholds": {
+    "crowd": 20,
+    "busy": 10,
+    "peoplePerMinute": 2.6
+  },
+  "students": [
+    "高二(3)班 · 王小明",
+    "高二(3)班 · 李佳怡",
+    "高二(3)班 · 陈子豪",
+    "高一(1)班 · 赵雨欣",
+    "高一(1)班 · 孙浩然",
+    "高一(2)班 · 周思远",
+    "高一(2)班 · 吴偲玥",
+    "高三(1)班 · 郑一诺",
+    "高三(1)班 · 冯启航",
+    "高三(2)班 · 许安琪",
+    "高三(2)班 · 林嘉树",
+    "高二(1)班 · 何若溪"
+  ],
+  "updated": "2026-11-17 22:24"
+}

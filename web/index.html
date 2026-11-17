@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>人大附中智慧食堂综合调度中心</title>
+  <meta name="description" content="智慧食堂综合管理与健康分析系统 · 总控大屏演示版（纯前端静态页，无需部署）" />
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main">
+      <div class="topbar" id="topbar"></div>
+      <div class="view" id="view"></div>
+      <footer class="foot" id="foot"></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- 数据（可直接改 data/*.json；data.js 是构建产物，供 file:// 直接打开时兜底） -->
+  <script src="assets/js/data.js"></script>
+  <!-- 图标（内联 SVG，无 emoji、无外部依赖） -->
+  <script src="assets/js/icons.js"></script>
+  <!-- 轻量图表：纯 SVG 手写，不依赖任何 CDN，断网也能演示 -->
+  <script src="assets/js/charts.js"></script>
+  <!-- 平台内核：模块注册 / 数据源注册 / 路由 / 通用渲染器 -->
+  <script src="assets/js/platform.js"></script>
+  <!-- 五个页面 -->
+  <script src="assets/js/pages.js"></script>
+  <!-- 启动 -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+{
+  "hero": {
+    "eyebrow": "CONTROL CENTER / OVERVIEW",
+    "title": "人大附中智慧食堂综合调度中心",
+    "subtitle": "排队拥堵监控 · 楼层分流建议 · 营养健康分析 —— 三模块统一接入的调度中枢",
+    "stats": [
+      {
+        "label": "SYSTEM",
+        "value": "运行中",
+        "sub": "三模块接口预留"
+      },
+      {
+        "label": "QUEUE",
+        "value": "57 人",
+        "sub": "当前在途排队"
+      },
+      {
+        "label": "ALERTS",
+        "value": "3 条",
+        "sub": "今日累计告警"
+      }
+    ]
+  },
+  "kpis": [
+    {
+      "icon": "people",
+      "label": "今日就餐人次",
+      "value": "1,286",
+      "unit": "人次",
+      "tone": "ok",
+      "trend": "up",
+      "delta": "+4.9% 环比昨日",
+      "source": "餐卡刷卡记录"
+    },
+    {
+      "icon": "queue",
+      "label": "当前排队总人数",
+      "value": "57",
+      "unit": "人",
+      "tone": "danger",
+      "trend": "flat",
+      "delta": "1 个窗口拥挤",
+      "source": "排队监控模块"
+    },
+    {
+      "icon": "clock",
+      "label": "今日平均等待",
+      "value": "7.5",
+      "unit": "分钟",
+      "tone": "warn",
+      "trend": "down",
+      "delta": "-0.1 分钟 环比昨日",
+      "source": "取餐时间统计"
+    },
+    {
+      "icon": "camera",
+      "label": "系统在线摄像头",
+      "value": "6/8",
+      "unit": "路",
+      "tone": "danger",
+      "trend": "flat",
+      "delta": "离线 2 路",
+      "source": "心跳检测"
+    }
+  ],
+  "hourly": {
+    "categories": [
+      "07:00",
+      "08:00",
+      "09:00",
+      "10:00",
+      "11:00",
+      "12:00",
+      "13:00",
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00",
+      "19:00",
+      "20:00"
+    ],
+    "values": [
+      60,
+      45,
+      20,
+      15,
+      210,
+      430,
+      160,
+      30,
+      20,
+      25,
+      190,
+      360,
+      120,
+      40
+    ]
+  },
+  "modules": [
+    {
+      "icon": "grid",
+      "name": "调度中心前端",
+      "status": "running",
+      "detail": "时延 12 ms",
+      "owner": "平台组"
+    },
+    {
+      "icon": "queue",
+      "name": "排队检测接口",
+      "status": "pending",
+      "detail": "尚未联通",
+      "owner": "CV 组"
+    },
+    {
+      "icon": "layers",
+      "name": "楼层汇总接口",
+      "status": "pending",
+      "detail": "尚未联通",
+      "owner": "硬件组"
+    },
+    {
+      "icon": "nutrition",
+      "name": "营养数据接口",
+      "status": "mock",
+      "detail": "时延 35 ms",
+      "owner": "数据组"
+    },
+    {
+      "icon": "camera",
+      "name": "摄像头网关",
+      "status": "running",
+      "detail": "6/8 在线",
+      "owner": "平台组"
+    },
+    {
+      "icon": "database",
+      "name": "本地数据中台",
+      "status": "running",
+      "detail": "时延 3 ms",
+      "owner": "平台组"
+    }
+  ],
+  "floors": [
+    {
+      "name": "1 楼",
+      "usage": 83.8,
+      "tone": "danger"
+    },
+    {
+      "name": "2 楼",
+      "usage": 61.2,
+      "tone": "ok"
+    },
+    {
+      "name": "3 楼",
+      "usage": 52.8,
+      "tone": "ok"
+    }
+  ],
+  "alerts": [
+    {
+      "time": "22:16",
+      "level": "critical",
+      "text": "1号窗口当前拥挤，排队 23 人，超过 20 人阈值"
+    },
+    {
+      "time": "22:00",
+      "level": "warn",
+      "text": "CAM-07（一层入口通道）心跳丢失，已持续 18 分钟"
+    },
+    {
+      "time": "21:37",
+      "level": "warn",
+      "text": "5号窗口等待时间升至 5 分钟，触发关注阈值"
+    },
+    {
+      "time": "21:03",
+      "level": "info",
+      "text": "高二(3)班营养周报生成完成，已推送 34 位家长"
+    },
+    {
+      "time": "20:18",
+      "level": "info",
+      "text": "餐卡点餐记录同步完成，新增 1,286 条"
+    }
+  ],
+  "resources": [
+    {
+      "name": "摄像头在线率",
+      "value": 75
+    },
+    {
+      "name": "接口连通率",
+      "value": 67
+    },
+    {
+      "name": "数据同步完整率",
+      "value": 98
+    }
+  ]
+}
